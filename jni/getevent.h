@@ -1,5 +1,5 @@
 //#include <linux/input.h>	// not compiled
-#include </usr/include/linux/input.h> // Ubuntu 12.04 LTE
+#include "linux/input.h"
 
 struct label {
     const char *name;

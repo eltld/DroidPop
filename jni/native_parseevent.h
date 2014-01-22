@@ -2,7 +2,7 @@
 #define _NATIVE_PARSE_EVENT_H
 
 //#include <linux/input.h>	// not compiled
-#include </usr/include/linux/input.h> // Ubuntu 12.04 LTE
+#include "linux/input.h"
 
 typedef struct {
 	long id;

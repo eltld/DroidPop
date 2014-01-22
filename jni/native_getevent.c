@@ -8,8 +8,6 @@
 #include <sys/inotify.h>
 #include <sys/limits.h>
 #include <sys/poll.h>
-//#include <linux/input.h>	// not compiled
-#include </usr/include/linux/input.h> // Ubuntu 12.04 LTE
 #include <errno.h>
 
 #include "getevent.h"
