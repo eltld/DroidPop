@@ -6,8 +6,6 @@ import android.content.Context;
 import android.content.Intent;
 
 import com.droidpop.R;
-import com.droidpop.view.ScreenCoordsManager;
-import com.droidpop.view.ServiceManager;
 
 public class DroidPop {
 	public static final int SCREEN_COORDS_SERVICE = 0;
@@ -21,9 +19,13 @@ public class DroidPop {
 	
 	private volatile static DroidPop sDroidPop = null;
 	private final static Logcat sLogcat = new Logcat();
+	static {
+		sLogcat.setOn();	// debug mode
+	}
 	
 	private Context mContext;
-	private ScreenCoordsManagerImpl mScreenCoordsManager;
+	private ScreenCoordsManager mScreenCoordsManager;
+	private ScreenCapManager mScreenCapManager;
 	
 	public static void initFromLauncherActivity(Context context) {
 		if(sDroidPop == null) {
@@ -107,6 +109,10 @@ public class DroidPop {
 			mScreenCoordsManager.startService();
 			manager = mScreenCoordsManager;
 			break;
+		case SCREEN_CAPTURE_SERVICE:
+			mScreenCapManager.startService();
+			manager = mScreenCapManager;
+			break;
 		}
 		return manager;
 	}
@@ -116,29 +122,22 @@ public class DroidPop {
 		case SCREEN_COORDS_SERVICE:
 			mScreenCoordsManager.stopService();
 			break;
+		case SCREEN_CAPTURE_SERVICE:
+			mScreenCapManager.stopService();
+			break;
 		}
 	}
 	
 	public void stopService() {
 		mScreenCoordsManager.stopService();
+		mScreenCapManager.stopService();
 	}
 	
 	private DroidPop(Context context) {
 		mContext = context.getApplicationContext();
-		mScreenCoordsManager = new ScreenCoordsManagerImpl(mContext);
+		
+		mScreenCoordsManager = new ScreenCoordsManager(mContext);
+		mScreenCapManager = new ScreenCapManager(mContext);
 	}
 	
-	private final class ScreenCoordsManagerImpl extends ScreenCoordsManager {
-		public ScreenCoordsManagerImpl(Context context) {
-			super(context);
-		}
-		
-		public void startService() {
-			super.startService();
-		}
-
-		public void stopService() {
-			super.stopService();
-		}
-	};
 }

@@ -1,4 +1,4 @@
-package com.droidpop.view;
+package com.droidpop.app;
 
 public interface ServiceManager {
 

@@ -1,13 +1,14 @@
-package com.droidpop.view;
+package com.droidpop.app;
 
-import android.app.Service;
+import me.wtao.service.IScreenCaptureService;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.graphics.Bitmap;
 import android.os.IBinder;
+import android.os.RemoteException;
 
-import com.droidpop.app.DroidPop;
 import com.droidpop.service.ScreenCoordsService;
 
 public class ScreenCapManager implements ServiceManager {
@@ -21,12 +22,24 @@ public class ScreenCapManager implements ServiceManager {
 	private long mWaitTimeout = TIME_OUT_CONNECTION_ESTABLISH; // ms	
 	private int mConnCnt = 0;
 	
-	private Service mService = null;
+	private IScreenCaptureService mService = null;
 	private boolean mIsBound = false;
 	private ServiceConnection mConn = new ScreenCoordsServiceConn();
 	
 	protected ScreenCapManager(Context context) {
 		mContext = context;
+	}
+	
+	public Bitmap takeScreenCapture() {
+		try {
+			return mService.takeScreenCapture();
+		} catch (RemoteException e) {
+			DroidPop.log(DroidPop.LEVEL_WARN, e);
+		} catch (Exception e) {
+			DroidPop.log(DroidPop.LEVEL_ERROR, e);
+		}
+		
+		return null;
 	}
 
 	protected void startService() {
@@ -86,7 +99,7 @@ public class ScreenCapManager implements ServiceManager {
 
 		@Override
 		public void onServiceConnected(ComponentName name, IBinder binder) {
-			// mService = ?
+			mService = IScreenCaptureService.Stub.asInterface(binder);
 			mIsBound = true;
 			synchronized(ScreenCapManager.this) {
 				ScreenCapManager.this.notify();

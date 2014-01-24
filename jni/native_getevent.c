@@ -406,6 +406,9 @@ static int open_device(const char *device, int print_flags) {
 	if (print_flags & PRINT_DEVICE_NAME)
 		printf("  name:     \"%s\"\n", name);
 
+	nativeDebug("add device %d: %s\n", nfds, device);
+	nativeDebug("  name:     \"%s\"\n", name);
+
 	/**
 	 * filter the device by name
 	 */

@@ -10,20 +10,21 @@ import android.widget.TextView;
 
 import com.droidpop.R;
 import com.droidpop.app.DroidPop;
+import com.droidpop.app.ScreenCapManager;
+import com.droidpop.app.ScreenCoordsManager;
 import com.droidpop.view.OnScreenTouchListener;
-import com.droidpop.view.ScreenCoordsManager;
 
 public class MainActivity extends Activity {
 
 	private TextView mTestView;
 	private ScreenCoordsManager mScreenCoordsManager;
+	private ScreenCapManager mScreenCapManager;
 	private OnScreenTouchListener mTestListener = new OnScreenTouchListener() {
 		
 		@Override
 		public void onScreenTouch(MotionEvent event) {
 			DroidPop.debug(Logcat.shortFor(event, "action", "x", "y"));
-			DroidPop.debug(Thread.currentThread());
-			mTestView.setText(Logcat.shortFor(event, "action", "x", "y"));
+//			mTestView.setText(Logcat.shortFor(event, "action", "x", "y"));
 //			mStatusBar.updateDebugStatus(Logcat.shortFor(event, "action", "x", "y"));
 		}
 	};
@@ -40,6 +41,9 @@ public class MainActivity extends Activity {
 		mScreenCoordsManager = (ScreenCoordsManager) app
 				.getAppService(DroidPop.SCREEN_COORDS_SERVICE);
 		mScreenCoordsManager.setOnScreenTouchListener(mTestListener);
+		
+//		mScreenCapManager = (ScreenCapManager) app
+//				.getAppService(DroidPop.SCREEN_CAPTURE_SERVICE);
 		
 		mStatusBar = new DebugStatusBar(getApplicationContext());
 		mStatusBar.setHightlightOff();

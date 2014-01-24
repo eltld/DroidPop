@@ -17,7 +17,6 @@ import android.view.MotionEvent;
 import android.view.MotionEvent.PointerCoords;
 import android.view.MotionEvent.PointerProperties;
 
-import com.droidpop.app.DroidPop;
 import com.droidpop.view.OnScreenTouchListener;
 import com.droidpop.view.SystemOverlayView;
 

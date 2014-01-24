@@ -1,7 +1,6 @@
-package com.droidpop.view;
+package com.droidpop.app;
 
 import java.util.ArrayList;
-import java.util.Queue;
 
 import android.content.ComponentName;
 import android.content.Context;
@@ -9,11 +8,11 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.IBinder;
 
-import com.droidpop.app.DroidPop;
 import com.droidpop.service.LocalBinder;
 import com.droidpop.service.ScreenCoordsService;
+import com.droidpop.view.OnScreenTouchListener;
 
-public abstract class ScreenCoordsManager implements ServiceManager {
+public class ScreenCoordsManager implements ServiceManager {
 	private Context mContext;
 	private ScreenCoordsService mService;
 	private boolean mIsBound;

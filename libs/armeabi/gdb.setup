@@ -1,0 +1,2 @@
+set solib-search-path ./obj/local/armeabi
+directory /Users/tagwang/Library/Developer/adt-bundle-mac-x86_64/ndk/platforms/android-17/arch-arm/usr/include jni /Users/tagwang/Library/Developer/adt-bundle-mac-x86_64/ndk/sources/cxx-stl/system

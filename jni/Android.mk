@@ -16,7 +16,7 @@ LOCAL_PATH := $(call my-dir)
 
 include $(CLEAR_VARS)
 
-LOCAL_MODULE    := coords
+LOCAL_MODULE := coords
 LOCAL_SRC_FILES := \
 	native_utils.c \
 	native_log.c \
