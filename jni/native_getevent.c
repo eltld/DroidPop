@@ -346,10 +346,14 @@ static int open_device(const char *device, int print_flags) {
 	char idstr[80];
 	struct input_id id;
 
+	__TAG__;
+
 	fd = open(device, O_RDWR);
 	if (fd < 0) {
 		if (print_flags & PRINT_DEVICE_ERRORS)
 			fprintf(stderr, "could not open %s, %s\n", device, strerror(errno));
+
+		__TAG__;
 		return -1;
 	}
 
@@ -357,14 +361,20 @@ static int open_device(const char *device, int print_flags) {
 		if (print_flags & PRINT_DEVICE_ERRORS)
 			fprintf(stderr, "could not get driver version for %s, %s\n", device,
 					strerror(errno));
+
+		__TAG__;
 		return -1;
 	}
+
 	if (ioctl(fd, EVIOCGID, &id)) {
 		if (print_flags & PRINT_DEVICE_ERRORS)
 			fprintf(stderr, "could not get driver id for %s, %s\n", device,
 					strerror(errno));
+
+		__TAG__;
 		return -1;
 	}
+
 	name[sizeof(name) - 1] = '\0';
 	location[sizeof(location) - 1] = '\0';
 	idstr[sizeof(idstr) - 1] = '\0';
@@ -695,6 +705,8 @@ static int getevent_main(int argc, char *argv[]) {
 	if (dont_block)
 		return EXIT_DONT_BLOCK;
 
+	__TAG__;
+
 	while (1) {
 		pollres = poll(ufds, nfds, -1);
 		//printf("poll %d, returned %d\n", nfds, pollres);
@@ -754,6 +766,10 @@ int native_init() {
 	const char* argv[] = { "initevent", "-i" };
 	const int argc = sizeof(argv) / sizeof(char*);
 
+//	if (isRootAvailable()) {
+//		sudo("chmod 666 /dev/input");
+//	}
+
 	int ret = getevent_main(argc, argv);
 
 	nativeDebug("[%p] halfway %s", ret,
@@ -785,7 +801,6 @@ int native_getevent() {
 	}
 
 	if(isRootAvailable()) {
-		nativeDebug("chmod 666 %s", argv[1]);
 		sudo("chmod 666 %s", argv[1]);
 	}
 
