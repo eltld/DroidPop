@@ -8,11 +8,12 @@
 ############
 # it's better to unpack these files and commit the raw source
 # git has its own built in compression methods
-android-support-v4.jar
+*/android-support-v4.jar
 
 # Eclipse Configs #
 .project
 .classpath
-.externalToolBuilders
-/bin/*
-/obj/*
+.externalToolBuilders/*
+gen/*
+bin/*
+obj/*
