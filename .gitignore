@@ -6,7 +6,8 @@
 
 # Debug Configs #
 ################
-libs/*gdb*
+libs/*/gdb.setup
+libs/*/gdbserver
 
 # Packages #
 ############

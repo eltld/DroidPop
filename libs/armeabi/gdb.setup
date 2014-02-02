@@ -1,2 +1,0 @@
-set solib-search-path /Users/tagwang/Desktop/DroidPop/obj/local/armeabi
-directory /Users/tagwang/Library/Developer/adt-bundle-mac-x86_64/ndk/platforms/android-17/arch-arm/usr/include /Users/tagwang/Desktop/DroidPop/jni /Users/tagwang/Library/Developer/adt-bundle-mac-x86_64/ndk/sources/cxx-stl/system
