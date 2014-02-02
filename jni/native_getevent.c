@@ -349,11 +349,24 @@ static int open_device(const char *device, int print_flags) {
 	__TAG__;
 
 	fd = open(device, O_RDWR);
+
+	if(fd < 0) {
+		LOGW("failed to open %s: %s", device, strerror(errno));
+
+		if(isRootAvailable()) {
+			LOGW("try to repair permission...");
+			sudo("chmod 666 %s", device);
+			fd = open(device, O_RDWR);
+		}
+	}
+
 	if (fd < 0) {
 		if (print_flags & PRINT_DEVICE_ERRORS)
 			fprintf(stderr, "could not open %s, %s\n", device, strerror(errno));
 
+		LOGE("oops, could not open %s: %s", device, strerror(errno));
 		__TAG__;
+
 		return -1;
 	}
 
@@ -415,9 +428,6 @@ static int open_device(const char *device, int print_flags) {
 				id.version);
 	if (print_flags & PRINT_DEVICE_NAME)
 		printf("  name:     \"%s\"\n", name);
-
-	nativeDebug("add device %d: %s\n", nfds, device);
-	nativeDebug("  name:     \"%s\"\n", name);
 
 	/**
 	 * filter the device by name
@@ -763,12 +773,8 @@ static int getevent_main(int argc, char *argv[]) {
 int native_init() {
 	nativeDebug("native init...");
 
-	const char* argv[] = { "initevent", "-i" };
+	char* argv[] = { "initevent", "-i" };
 	const int argc = sizeof(argv) / sizeof(char*);
-
-//	if (isRootAvailable()) {
-//		sudo("chmod 666 /dev/input");
-//	}
 
 	int ret = getevent_main(argc, argv);
 
@@ -797,11 +803,7 @@ int native_getevent() {
 	const int argc = 2;
 
 	if (getDevEvent != NULL) {
-		argv[1] = getDevEvent();
-	}
-
-	if(isRootAvailable()) {
-		sudo("chmod 666 %s", argv[1]);
+		argv[1] = (char*)getDevEvent();
 	}
 
 	int ret = getevent_main(argc, argv);

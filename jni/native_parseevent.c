@@ -236,7 +236,7 @@ int nativeGetAction() {
 	return sAction;
 }
 
-float nativeGetPrecision(axis) {
+float nativeGetPrecision(const int axis) {
 	if (axis == 0) {
 		// AXIS_X
 		return sCalibratedWidth / sResolutionX;

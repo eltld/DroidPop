@@ -2,6 +2,8 @@ package com.droidpop.app;
 
 import junit.framework.Assert;
 import me.wtao.utils.Logcat;
+import me.wtao.utils.su.OnShellProcessingListener;
+import me.wtao.utils.su.RootManager;
 import android.content.Context;
 import android.content.Intent;
 
@@ -135,6 +137,31 @@ public class DroidPop {
 	
 	private DroidPop(Context context) {
 		mContext = context.getApplicationContext();
+		
+//		RootManager manager = new RootManager();
+//		final String cmd = "chmod 777 " + mContext.getPackageCodePath();
+//		if (manager.isRootAvailable()) {
+//			sLogcat.d(cmd);
+//			
+//			manager.sudo(new OnShellProcessingListener() {
+//
+//				@Override
+//				public void onCommandCompleted(int id, int exitCode) {
+//					sLogcat.d("ok");
+//				}
+//
+//				@Override
+//				public void onCommandOutput(int id, String line) {
+//					sLogcat.d(line);
+//				}
+//
+//				@Override
+//				public void onCommandTerminated(int id, String reason) {
+//					sLogcat.d(reason);
+//				}
+//
+//			}, cmd);
+//		}
 		
 		mScreenCoordsManager = new ScreenCoordsManager(mContext);
 		mScreenCapManager = new ScreenCapManager(mContext);

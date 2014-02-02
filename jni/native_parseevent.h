@@ -24,7 +24,7 @@ int native_getevent();
 long nativeGetDownTime();
 long nativeGetEventTime();
 int nativeGetAction();
-float nativeGetPrecision(axis);
+float nativeGetPrecision(const int axis);
 int nativeGetPointerCount();
 coords_t* nativeGetPointerCoords();
 
