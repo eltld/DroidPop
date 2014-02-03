@@ -1,12 +1,12 @@
 package com.droidpop.activity;
 
+import me.wtao.os.UiThreadHandler;
 import me.wtao.utils.DebugStatusBar;
 import me.wtao.utils.Logcat;
 import android.app.Activity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MotionEvent;
-import android.widget.TextView;
 
 import com.droidpop.R;
 import com.droidpop.app.DroidPop;
@@ -16,25 +16,73 @@ import com.droidpop.view.OnScreenTouchListener;
 
 public class MainActivity extends Activity {
 
-	private TextView mTestView;
 	private ScreenCoordsManager mScreenCoordsManager;
 	private ScreenCapManager mScreenCapManager;
+	
+	private final UiThreadHandler mUiHandler = new UiThreadHandler();
+
+	private DebugStatusBar mStatusBar;
 	private OnScreenTouchListener mTestListener = new OnScreenTouchListener() {
+		private MotionEvent mPrevEvent = null;
 		
 		@Override
-		public void onScreenTouch(MotionEvent event) {
+		public void onScreenTouch(final MotionEvent event) {
 			DroidPop.debug(Logcat.shortFor(event, "action", "x", "y"));
-//			mTestView.setText(Logcat.shortFor(event, "action", "x", "y"));
-//			mStatusBar.updateDebugStatus(Logcat.shortFor(event, "action", "x", "y"));
+			
+			if(mPrevEvent != null) {
+				mPrevEvent.recycle();
+			}
+			mPrevEvent = MotionEvent.obtain(event);
+			
+			mUiHandler.runOnUiThread(new Runnable() {
+//				private static final int ACTION = 1<<0;
+//				private static final int AXIS_X = 1<<1;
+//				private static final int AXIS_Y = 1<<2;
+				
+				@Override
+				public void run() {
+					mStatusBar.updateDebugStatus(
+							Logcat.shortFor(event, "action", "x", "y"));
+					
+//					mStatusBar.updateDebugStatus(
+//							getEventInfo(event, mPrevEvent, ACTION),
+//							getEventInfo(event, mPrevEvent, AXIS_X),
+//							getEventInfo(event, mPrevEvent, AXIS_Y));
+				}
+				
+				// TODO: high light the debug info.
+//				private String getEventInfo(MotionEvent ev, MotionEvent prev, final int key) {
+//					String keyVal;
+//					switch (key) {
+//					case ACTION:
+//						keyVal = "action";
+//						break;
+//					case AXIS_X:
+//						keyVal = "x";
+//						break;
+//					case AXIS_Y:
+//						keyVal = "y";
+//						break;
+//					default:
+//						return null;
+//					}
+//					
+//					String value;
+//					if(ev.getAction() != prev.getAction()) {
+//						value = DebugStatusBar.I + Logcat.shortFor(event, keyVal);
+//					} else {
+//						value = Logcat.shortFor(event, keyVal);
+//					}
+//					return value;
+//				}
+			});
 		}
 	};
-	private DebugStatusBar mStatusBar;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-		mTestView = (TextView)findViewById(R.id.test);
 		
 		DroidPop.initFromLauncherActivity(this);
 		DroidPop app = DroidPop.getApplication();
@@ -46,7 +94,7 @@ public class MainActivity extends Activity {
 //				.getAppService(DroidPop.SCREEN_CAPTURE_SERVICE);
 		
 		mStatusBar = new DebugStatusBar(getApplicationContext());
-		mStatusBar.setHightlightOff();
+		mStatusBar.setHightlightOff(); // TODO: disable just for now
 		mStatusBar.attachedToWindow();
 		mStatusBar.show();		
 	}
