@@ -9,8 +9,6 @@ import android.graphics.Bitmap;
 import android.os.IBinder;
 import android.os.RemoteException;
 
-import com.droidpop.service.ScreenCoordsService;
-
 public class ScreenCapManager implements ServiceManager {
 	private static final long WAIT_TIME_THRESHOLD = 30000; // ms
 	private static final long RE_CONNECT_LIMIT = 3; // attempt limit
@@ -24,7 +22,7 @@ public class ScreenCapManager implements ServiceManager {
 	
 	private IScreenCaptureService mService = null;
 	private boolean mIsBound = false;
-	private ServiceConnection mConn = new ScreenCoordsServiceConn();
+	private ServiceConnection mConn = new ScreenCapServiceConn();
 	
 	protected ScreenCapManager(Context context) {
 		mContext = context;
@@ -83,7 +81,7 @@ public class ScreenCapManager implements ServiceManager {
 	
 	private void bindService() {
 		if (!mContext.bindService(new Intent(mContext,
-				ScreenCoordsService.class), mConn, Context.BIND_AUTO_CREATE)) {
+				IScreenCaptureService.class), mConn, Context.BIND_AUTO_CREATE)) {
 			DroidPop.log(DroidPop.LEVEL_WARN, "connection not established!");
 		}
 	}
@@ -95,7 +93,7 @@ public class ScreenCapManager implements ServiceManager {
 		}
 	}
 
-	private class ScreenCoordsServiceConn implements ServiceConnection {
+	private class ScreenCapServiceConn implements ServiceConnection {
 
 		@Override
 		public void onServiceConnected(ComponentName name, IBinder binder) {

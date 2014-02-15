@@ -3,16 +3,22 @@ package com.droidpop.activity;
 import me.wtao.os.UiThreadHandler;
 import me.wtao.utils.DebugStatusBar;
 import me.wtao.utils.Logcat;
+import me.wtao.utils.ScreenMetrics;
+import me.wtao.view.Hotspot;
 import android.app.Activity;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MotionEvent;
+import android.view.View;
+import android.view.ViewGroup;
 
 import com.droidpop.R;
 import com.droidpop.app.DroidPop;
 import com.droidpop.app.ScreenCapManager;
 import com.droidpop.app.ScreenCoordsManager;
 import com.droidpop.view.OnScreenTouchListener;
+import com.droidpop.view.WordCapLockView;
 
 public class MainActivity extends Activity {
 
@@ -85,13 +91,19 @@ public class MainActivity extends Activity {
 		setContentView(R.layout.activity_main);
 		
 		DroidPop.initFromLauncherActivity(this);
-		DroidPop app = DroidPop.getApplication();
-		mScreenCoordsManager = (ScreenCoordsManager) app
-				.getAppService(DroidPop.SCREEN_COORDS_SERVICE);
-		mScreenCoordsManager.setOnScreenTouchListener(mTestListener);
+//		DroidPop app = DroidPop.getApplication();
+		
+//		mScreenCoordsManager = (ScreenCoordsManager) app
+//				.getAppService(DroidPop.SCREEN_COORDS_SERVICE);
+//		mScreenCoordsManager.setOnScreenTouchListener(mTestListener);
 		
 //		mScreenCapManager = (ScreenCapManager) app
 //				.getAppService(DroidPop.SCREEN_CAPTURE_SERVICE);
+//		mScreenCapManager.takeScreenCapture();
+		
+		WordCapLockView test = new WordCapLockView(getApplicationContext());
+		test.attachedToWindow();
+		test.setEnable();
 		
 		mStatusBar = new DebugStatusBar(getApplicationContext());
 		mStatusBar.setHightlightOff(); // TODO: disable just for now
