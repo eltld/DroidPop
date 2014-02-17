@@ -28,11 +28,7 @@
         </activity>
 
         <service android:name=".service.ScreenCoordsService" />
-        <service android:name="me.wtao.service.ScreenCaptureService" >
-            <intent-filter>
-                <action android:name="me.wtao.service.IScreenCaptureService" />
-            </intent-filter>
-        </service>
+        
     </application>
 
 </manifest>

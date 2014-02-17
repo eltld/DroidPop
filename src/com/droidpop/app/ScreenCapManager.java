@@ -1,115 +1,260 @@
 package com.droidpop.app;
 
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+
 import me.wtao.service.IScreenCaptureService;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.graphics.Bitmap;
+import android.graphics.Rect;
+import android.os.AsyncTask;
 import android.os.IBinder;
 import android.os.RemoteException;
 
 public class ScreenCapManager implements ServiceManager {
-	private static final long WAIT_TIME_THRESHOLD = 30000; // ms
-	private static final long RE_CONNECT_LIMIT = 3; // attempt limit
-	private static final long TIME_OUT_SERVICE_ANR = 10000; // ms
-	private static final long TIME_OUT_CONNECTION_ESTABLISH = 1000; // ms
+
+	public static interface ScreenCapTaskDispatcher extends OnScreenCaptureListener {
+		public Rect[] setBounds();
+	}
 
 	protected Context mContext;
 	
-	private long mWaitTimeout = TIME_OUT_CONNECTION_ESTABLISH; // ms	
-	private int mConnCnt = 0;
-	
-	private IScreenCaptureService mService = null;
-	private boolean mIsBound = false;
-	private ServiceConnection mConn = new ScreenCapServiceConn();
+	private final ArrayList<WeakReference<ScreenCaptureTask>> mCapTasks = new ArrayList<WeakReference<ScreenCaptureTask>>() {
+
+		private static final long serialVersionUID = 1L;
+
+		public boolean add(WeakReference<ScreenCaptureTask> object) {
+			for(WeakReference<ScreenCaptureTask> ref : this) {
+				if(ref == null || ref.get() == null) {
+					ref = object;
+					return true;
+				}
+			}
+			return super.add(object);
+		};
+
+		public void clear() {
+			for(WeakReference<ScreenCaptureTask> ref : this) {
+				if(ref == null || ref.get() == null) {
+					ref.get().cancel(true);
+				}
+			}
+			
+			super.clear();
+		};
+	};
 	
 	protected ScreenCapManager(Context context) {
 		mContext = context;
 	}
 	
-	public Bitmap takeScreenCapture() {
-		try {
-			return mService.takeScreenCapture();
-		} catch (RemoteException e) {
-			DroidPop.log(DroidPop.LEVEL_WARN, e);
-		} catch (Exception e) {
-			DroidPop.log(DroidPop.LEVEL_ERROR, e);
+	public void dispatch(ScreenCapTaskDispatcher dispatcher) {
+		ScreenCaptureTask task = new ScreenCaptureTask();
+		mCapTasks.add(new WeakReference<ScreenCapManager.ScreenCaptureTask>(task));
+		task.setOnScreenCaptureListener(dispatcher);
+		Rect[] bounds = dispatcher.setBounds();
+		if(bounds == null) {
+			task.execute();
+		} else {
+			task.execute(bounds);
 		}
-		
-		return null;
 	}
 
+	/**
+	 * not used but reserved
+	 */
 	protected void startService() {
-		connect();
 		
-		while (mService == null && mConnCnt <= RE_CONNECT_LIMIT) {
-			DroidPop.log(DroidPop.LEVEL_WARN, "try to reconnect...");
-			connect();
-			++mConnCnt;
-
-			if (mWaitTimeout < WAIT_TIME_THRESHOLD) {
-				mWaitTimeout *= 2; // double increase
-			} else {
-				mWaitTimeout += 1000; // linear increase
-			}
-
-		}
-		
-		if(mConnCnt >= RE_CONNECT_LIMIT) {
-			DroidPop.log(DroidPop.LEVEL_WARN, "attempt limit!");
-		}
 	}
 
 	protected void stopService() {
-		unbindService();
+		mCapTasks.clear();
 	}
 	
-	private void connect() {
-		bindService();
+	private static interface OnScreenCaptureListener {
+		public void onDone(ArrayList<Bitmap> resluts);
+		/**
+		 * @param msg not used but reserved, error information
+		 */
+		public void onCancelled(String msg);
+	}
+	
+	private class ScreenCaptureTask extends AsyncTask<Rect, Bitmap, ArrayList<Bitmap>> {
+		private static final long WAIT_TIME_THRESHOLD = 30000; // ms
+		private static final long RE_CONNECT_LIMIT = 3; // attempt limit
+		private static final long TIME_OUT_SERVICE_ANR = 10000; // ms
+		private static final long TIME_OUT_CONNECTION_ESTABLISH = 1000; // ms
+
+		private ServiceConnection mConn;
+		private OnScreenCaptureListener mListener;
 		
-		// blocked and wait until connection established
-		synchronized (this) {
-			try {
-				DroidPop.debug("blocked and wait...");
-				wait((mConnCnt == 0) ? TIME_OUT_SERVICE_ANR : mWaitTimeout);				
-			} catch (InterruptedException e) {
-				DroidPop.log(DroidPop.LEVEL_WARN, "oops, cannot wait to go!");
-			}
-		}
-	}
-	
-	private void bindService() {
-		if (!mContext.bindService(new Intent(mContext,
-				IScreenCaptureService.class), mConn, Context.BIND_AUTO_CREATE)) {
-			DroidPop.log(DroidPop.LEVEL_WARN, "connection not established!");
-		}
-	}
-	
-	private void unbindService() {
-		if(mIsBound) {
-			mContext.unbindService(mConn);
-			mIsBound = false;
-		}
-	}
-
-	private class ScreenCapServiceConn implements ServiceConnection {
-
-		@Override
-		public void onServiceConnected(ComponentName name, IBinder binder) {
-			mService = IScreenCaptureService.Stub.asInterface(binder);
-			mIsBound = true;
-			synchronized(ScreenCapManager.this) {
-				ScreenCapManager.this.notify();
-				mWaitTimeout = TIME_OUT_CONNECTION_ESTABLISH;
-				mConnCnt = 1;
-			}
-		}
-
-		@Override
-		public void onServiceDisconnected(ComponentName name) {
+		private IScreenCaptureService mService;
+		private boolean mIsBound;
+		
+		private long mWaitTimeout;
+		private int mConnCnt;
+		
+		public ScreenCaptureTask() {
+			mConn = new ScreenCapServiceConn();
+			mListener = null;
+			
 			mService = null;
 			mIsBound = false;
+			
+			mWaitTimeout = TIME_OUT_CONNECTION_ESTABLISH; // ms	
+			mConnCnt = 0;
+		}
+		
+		public void setOnScreenCaptureListener(OnScreenCaptureListener listener) {
+			mListener = listener;
+		}
+		
+		/**
+		 * @param rects not used but reserved, to specify rectangles on the screen capture
+		 * @return first element is the whole screen capture if success
+		 */
+		@Override
+		protected ArrayList<Bitmap> doInBackground(Rect... rects) {
+			DroidPop.debug("take screen capture...");
+			
+			ArrayList<Bitmap> ret = new ArrayList<Bitmap>();
+			
+			mConnCnt = 0;
+			connect();
+			
+			if (mService == null) {
+				reconnect();
+			}
+			
+			try {
+				Bitmap screencap = mService.takeScreenCapture();
+				ret.add(screencap);
+				Bitmap bmp = null;
+				for(Rect rect : rects) {
+					bmp = Bitmap.createBitmap(screencap,
+							rect.left, rect.top, rect.width(), rect.height());
+					publishProgress(bmp);
+				}
+			} catch (RemoteException e) {
+				DroidPop.log(DroidPop.LEVEL_WARN, e);
+			} catch (Exception e) {
+				DroidPop.log(DroidPop.LEVEL_ERROR, e);
+			}
+			
+			return ret;
+		}
+		
+		@Override
+		protected void onProgressUpdate(Bitmap... values) {
+			super.onProgressUpdate(values);
+		}
+		
+		@Override
+		protected void onPostExecute(ArrayList<Bitmap> result) {
+			DroidPop.debug("done");
+			if(mListener != null) {
+				mListener.onDone(result);
+			}
+			
+			if (!isCancelled()) {
+				unbindService();
+			}
+			super.onPostExecute(result);
+		}
+		
+		@Override
+		protected void onCancelled(ArrayList<Bitmap> result) {
+			DroidPop.debug("cancelled");
+			if(mListener != null) {
+				mListener.onCancelled(null);
+			}
+			
+			if(isCancelled()) {
+				unbindService();
+			}
+			super.onCancelled(result);
+		}
+
+		private void connect() {
+			bindService();
+			
+			// blocked and wait until connection established
+			synchronized (this) {
+				try {
+					DroidPop.debug("TID", Thread.currentThread().getId(),
+							": blocked and wait...");
+					wait((mConnCnt == 0) ? TIME_OUT_SERVICE_ANR : mWaitTimeout);				
+				} catch (InterruptedException e) {
+					DroidPop.log(DroidPop.LEVEL_WARN, "oops, cannot wait to go!");
+				}
+			}
+			
+			mConnCnt++;
+		}
+		
+		private void reconnect() {
+			while (mService == null && mConnCnt <= RE_CONNECT_LIMIT) {
+				DroidPop.log(DroidPop.LEVEL_WARN, "try to reconnect...");
+				connect();
+				
+				if (mWaitTimeout < WAIT_TIME_THRESHOLD) {
+					mWaitTimeout *= 4; // fast increase
+				} else {
+					mWaitTimeout += 1000; // linear increase
+				}
+			}
+			
+			if(mConnCnt > RE_CONNECT_LIMIT) {
+				DroidPop.log(DroidPop.LEVEL_WARN, "attempt limit!");
+			}
+		}
+		
+		private void bindService() {
+			if (!mContext.bindService(
+					new Intent(IScreenCaptureService.class.getName()),
+					mConn, Context.BIND_AUTO_CREATE)) {
+				DroidPop.log(DroidPop.LEVEL_WARN, "connection not established!");
+			}
+		}
+		
+		private void unbindService() {
+			if(mIsBound) {
+				mContext.unbindService(mConn);
+				
+				mService = null;
+				mIsBound = false;
+			}
+		}
+		
+		private class ScreenCapServiceConn implements ServiceConnection {
+
+			@Override
+			public void onServiceConnected(ComponentName name, IBinder binder) {
+				DroidPop.debug("connection established.");
+				
+				mService = IScreenCaptureService.Stub.asInterface(binder);
+				mIsBound = true;
+				synchronized(ScreenCaptureTask.this) {
+					DroidPop.debug("TID", Thread.currentThread().getId(),
+							": ok and notify");
+					ScreenCaptureTask.this.notify();
+					mWaitTimeout = TIME_OUT_CONNECTION_ESTABLISH;
+				}
+			}
+
+			@Override
+			public void onServiceDisconnected(ComponentName name) {
+				DroidPop.debug("connection broken!");
+				
+				reconnect();
+				
+				if (mService == null) {
+					mIsBound = false;
+				}
+			}
 		}
 	}
 }

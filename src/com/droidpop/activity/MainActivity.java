@@ -1,17 +1,20 @@
 package com.droidpop.activity;
 
+import java.util.ArrayList;
+
 import android.app.Activity;
+import android.graphics.Bitmap;
+import android.graphics.Rect;
 import android.os.Bundle;
 import android.view.Menu;
 
 import com.droidpop.R;
 import com.droidpop.app.DroidPop;
 import com.droidpop.app.ScreenCapManager;
+import com.droidpop.app.ScreenCapManager.ScreenCapTaskDispatcher;
 import com.droidpop.view.WordCapLockView;
 
 public class MainActivity extends Activity {
-
-	private ScreenCapManager mScreenCapManager;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -19,10 +22,27 @@ public class MainActivity extends Activity {
 		setContentView(R.layout.activity_main);
 		
 		DroidPop.initFromLauncherActivity(this);
-//		DroidPop app = DroidPop.getApplication();
-//		mScreenCapManager = (ScreenCapManager) app
-//				.getAppService(DroidPop.SCREEN_CAPTURE_SERVICE);
-//		mScreenCapManager.takeScreenCapture();
+		
+		DroidPop app = DroidPop.getApplication();
+		ScreenCapManager mgr = (ScreenCapManager) app
+				.getAppService(DroidPop.SCREEN_CAPTURE_SERVICE);
+		mgr.dispatch(new ScreenCapTaskDispatcher() {
+			
+			@Override
+			public void onDone(ArrayList<Bitmap> resluts) {
+				DroidPop.debug("pass");
+			}
+			
+			@Override
+			public void onCancelled(String msg) {
+				
+			}
+			
+			@Override
+			public Rect[] setBounds() {
+				return null;
+			}
+		});
 				
 		WordCapLockView test2 = new WordCapLockView(getApplicationContext());
 		test2.attachedToWindow();

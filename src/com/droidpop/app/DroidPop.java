@@ -112,7 +112,6 @@ public class DroidPop {
 			manager = mScreenCoordsManager;
 			break;
 		case SCREEN_CAPTURE_SERVICE:
-			mScreenCapManager.startService();
 			manager = mScreenCapManager;
 			break;
 		}
