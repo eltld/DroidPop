@@ -14,11 +14,12 @@ import com.droidpop.R;
 import com.droidpop.app.DroidPop;
 import com.droidpop.app.ScreenCapManager;
 import com.droidpop.app.ScreenCapManager.ScreenCapTaskDispatcher;
-import com.droidpop.app.YouDaoTranslator;
 import com.droidpop.dict.EntryParseException;
 import com.droidpop.dict.EntryParser;
 import com.droidpop.dict.JsonParser;
 import com.droidpop.dict.TranslationTask;
+import com.droidpop.dict.WordEntry;
+import com.droidpop.dict.YouDaoTranslator;
 import com.droidpop.dict.TranslationTask.OnTranslateListener;
 
 public class MainActivity extends Activity {
@@ -66,10 +67,10 @@ public class MainActivity extends Activity {
 				}
 				
 				try {
-					mParser.parse(result);
+					WordEntry entry = mParser.parse(result);
 					StringBuilder sb = new StringBuilder();
-					sb.append("word=").append(mParser.getWord());
-					sb.append("basic=").append(mParser.getBasicParaphrase());
+					sb.append("word=").append(entry.getWord());
+					sb.append("basic=").append(entry.getBasicParaphrase().getDetail());
 					
 					DroidPop.debug(sb.toString());
 					tv.setText(sb.toString());

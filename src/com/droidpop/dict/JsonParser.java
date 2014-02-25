@@ -4,46 +4,17 @@ import java.io.InputStream;
 
 public class JsonParser implements EntryParser {
 
+	public static final String DEFAULT_ENCODE = "UTF-8";
+	
+	protected String mEncode = DEFAULT_ENCODE;
+	
+	protected String mWord;
+	protected String mPhoneticSymbol;
+	
 	@Override
-	public boolean parse(InputStream in) throws EntryParseException {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public int getState() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
-	public String getWord() {
-		// TODO Auto-generated method stub
+	public WordEntry parse(InputStream in) throws EntryParseException {
+		
+        
 		return null;
 	}
-
-	@Override
-	public String getPhoneticSymbol() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public String getBasicParaphrase() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public String[] getParaphrases() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public String[] getParaphraseBy(int category) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
 }
