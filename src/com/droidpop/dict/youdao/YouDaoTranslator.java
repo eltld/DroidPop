@@ -1,4 +1,4 @@
-package com.droidpop.dict;
+package com.droidpop.dict.youdao;
 
 import java.net.HttpURLConnection;
 import java.net.SocketTimeoutException;
@@ -7,6 +7,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.droidpop.app.DroidPop;
+import com.droidpop.dict.EntryParseException;
+import com.droidpop.dict.Translator;
+import com.droidpop.dict.WordCategory;
+import com.droidpop.dict.WordEntry;
 import com.droidpop.dict.WordCategory.WordCategoryConfig;
 
 

@@ -1,15 +1,23 @@
-package com.droidpop.dict;
+package com.droidpop.dict.youdao;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.nio.CharBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import org.json.JSONObject;
+
 import android.util.JsonReader;
 
+import com.droidpop.dict.EntryParseException;
+import com.droidpop.dict.EntryParser;
+import com.droidpop.dict.WordCategory;
+import com.droidpop.dict.WordEntry;
 import com.droidpop.dict.WordEntry.Paraphrase;
 
 public class YouDaoJsonParser implements EntryParser {
@@ -19,7 +27,7 @@ public class YouDaoJsonParser implements EntryParser {
 	}
 	
 	protected final String mEncode; // YouDao APIv1.1 encode: UTF-8
-	protected final HashMap<String, Tag> mKeyMap;
+	protected final HashMap<String, Tag> mTagMap;
 
 	public YouDaoJsonParser() {
 		this(DEFAULT_ENCODE);
@@ -28,21 +36,29 @@ public class YouDaoJsonParser implements EntryParser {
 	public YouDaoJsonParser(String encode) {
 		mEncode = encode;
 
-		mKeyMap = new HashMap<String, Tag>();
+		mTagMap = new HashMap<String, Tag>();
 
-		mKeyMap.put("translation", Tag.TRANSLATION);
-		mKeyMap.put("basic", Tag.BASIC_PARAPHRASE);
-		mKeyMap.put("phonetic", Tag.PHONETIC_SYMBOL);
-		mKeyMap.put("explains", Tag.PARAPHRASES);
-		mKeyMap.put("errorCode", Tag.STATUS_CODE);
-		mKeyMap.put("web", Tag.WEB_ENTRY_MINING);
-		mKeyMap.put("key", Tag.KEY);
-		mKeyMap.put("value", Tag.VALUE);
+		mTagMap.put("translation", Tag.TRANSLATION);
+		mTagMap.put("basic", Tag.BASIC_PARAPHRASE);
+		mTagMap.put("phonetic", Tag.PHONETIC_SYMBOL);
+		mTagMap.put("explains", Tag.PARAPHRASES);
+		mTagMap.put("errorCode", Tag.STATUS_CODE);
+		mTagMap.put("web", Tag.WEB_ENTRY_MINING);
+		mTagMap.put("key", Tag.KEY);
+		mTagMap.put("value", Tag.VALUE);
 	}
 
 	@Override
 	public WordEntry parse(InputStream in) throws EntryParseException {
 		try {
+			BufferedReader br = new BufferedReader(new InputStreamReader(in, mEncode));
+			char[] json = new char[1024];
+			CharBuffer buffer = CharBuffer.wrap(json);
+			br.read(buffer);
+			JSONObject jobj = new JSONObject(new String(json));
+			System.out.println(jobj.toString(2)); // TODO:
+			
+			
 			JsonReader reader = new JsonReader(new InputStreamReader(in, mEncode));
 			
 			try {
@@ -50,7 +66,7 @@ public class YouDaoJsonParser implements EntryParser {
 				
 				while (reader.hasNext()) {
 					String key = reader.nextName();
-					switch (mKeyMap.get(key)) {
+					switch (mTagMap.get(key)) {
 					case STATUS_CODE:
 						entry.setStatus(readStatus(reader));
 						if(!entry.isValid()) {
@@ -112,7 +128,7 @@ public class YouDaoJsonParser implements EntryParser {
 		reader.beginObject();
 		while (reader.hasNext()) {
 			String key = reader.nextName();
-			switch (mKeyMap.get(key)) {
+			switch (mTagMap.get(key)) {
 			case PHONETIC_SYMBOL:
 				entry.setPhoneticSymbol(reader.nextString());
 				break;

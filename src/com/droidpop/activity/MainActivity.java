@@ -17,12 +17,12 @@ import com.droidpop.app.ScreenCapManager.ScreenCapTaskDispatcher;
 import com.droidpop.dict.EntryParseException;
 import com.droidpop.dict.EntryParser;
 import com.droidpop.dict.WordEntryReader;
-import com.droidpop.dict.YouDaoJsonParser;
 import com.droidpop.dict.TranslationTask;
 import com.droidpop.dict.TranslationTask.Status;
 import com.droidpop.dict.WordEntry;
-import com.droidpop.dict.YouDaoTranslator;
 import com.droidpop.dict.TranslationTask.OnTranslateListener;
+import com.droidpop.dict.youdao.YouDaoJsonParser;
+import com.droidpop.dict.youdao.YouDaoTranslator;
 
 public class MainActivity extends Activity {
 	
