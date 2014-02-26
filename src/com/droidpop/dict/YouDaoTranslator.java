@@ -1,7 +1,5 @@
 package com.droidpop.dict;
 
-import java.io.BufferedInputStream;
-import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.SocketTimeoutException;
 import java.net.URL;
@@ -12,17 +10,26 @@ import com.droidpop.app.DroidPop;
 import com.droidpop.dict.WordCategory.WordCategoryConfig;
 
 
-public class YouDaoTranslator implements Translator {
+public class YouDaoTranslator extends Translator {
+	public YouDaoTranslator() {
+		super(new YouDaoJsonParser());
+	}
+
 	public static class CategoryConfig implements WordCategoryConfig {
 		private static final HashMap<String, Integer> sConfigMap;
 		static {
 			sConfigMap = new HashMap<String, Integer>();
 			
+			sConfigMap.put("int.", WordCategory.INTERJECTION);
 			sConfigMap.put("n.", WordCategory.NOUN);
-			sConfigMap.put("vt.", WordCategory.VERB);
+			sConfigMap.put("vt.", WordCategory.VERB_TRANSITIVE);
 			sConfigMap.put("vi.", WordCategory.VERB_INTRANSITIVE);
 		}
 
+		public static final String abbrGategoryOf(String paraphrase) {
+			return paraphrase.substring(0, paraphrase.indexOf('.'));
+		}
+		
 		@Override
 		public Map<String, Integer> getCategoryMap() {
 			return sConfigMap;
@@ -41,30 +48,39 @@ public class YouDaoTranslator implements Translator {
     	sb.append(KEY);
     	sb.append("&type=data&doctype=");
     	sb.append(DOC_TYPE);
-    	sb.append("xml&version=1.1&q=");
+    	sb.append("&version=1.1&q=");
     	URL_BASE = sb.toString();
     }
-    
+
+	private static final String HTTP_METHOD = "GET"; // YouDao APIv1.1
     private static final int TIMEOUT = 10000; // ms
 
 	@Override
-	public InputStream autoTranslate(String text, String to) {
+	public WordEntry autoTranslate(String text, String to) {
 		StringBuilder url = new StringBuilder(URL_BASE);
 		url.append(text);
+		
+		DroidPop.log(DroidPop.LEVEL_VERBOSE, url.toString());
+		
 		try {
 			HttpURLConnection conn = (HttpURLConnection) new URL(url.toString())
 					.openConnection();
 			try {
+				conn.setRequestMethod(HTTP_METHOD);
 				conn.setConnectTimeout(TIMEOUT);
 				conn.setDoInput(true);
-				conn.setDoOutput(true);
-				return new BufferedInputStream(conn.getInputStream());
+				
+				YouDaoJsonParser parser = (YouDaoJsonParser) mReader;
+				return parser.parse(conn.getInputStream());
 			} finally {
 				conn.disconnect();
 			}
 		} catch (SocketTimeoutException e) {
 			DroidPop.log(DroidPop.LEVEL_WARN,
-					"time out and check network status!", e);
+					"time out and check network status!");
+		} catch (EntryParseException e) {
+			DroidPop.log(DroidPop.LEVEL_WARN, e.getStatus().name(),
+					" parse failed, ", e.getMessage());
 		} catch (Exception e) {
 			DroidPop.log(DroidPop.LEVEL_ERROR, e);
 		}
@@ -73,13 +89,13 @@ public class YouDaoTranslator implements Translator {
 	}
 
 	@Override
-	public boolean isDefualtAutoDetect() {
-		return true;
-	}
-
-	@Override
-	public InputStream manualTranslate(String text, String from, String to) {
+	public WordEntry manualTranslate(String text, String from, String to) {
 		return autoTranslate(text, to);
 	}
 
+	@Override
+	public boolean isDefualtAutoDetect() {
+		return true;
+	}
+	
 }

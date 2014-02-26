@@ -16,8 +16,10 @@ import com.droidpop.app.ScreenCapManager;
 import com.droidpop.app.ScreenCapManager.ScreenCapTaskDispatcher;
 import com.droidpop.dict.EntryParseException;
 import com.droidpop.dict.EntryParser;
-import com.droidpop.dict.JsonParser;
+import com.droidpop.dict.WordEntryReader;
+import com.droidpop.dict.YouDaoJsonParser;
 import com.droidpop.dict.TranslationTask;
+import com.droidpop.dict.TranslationTask.Status;
 import com.droidpop.dict.WordEntry;
 import com.droidpop.dict.YouDaoTranslator;
 import com.droidpop.dict.TranslationTask.OnTranslateListener;
@@ -58,28 +60,26 @@ public class MainActivity extends Activity {
 		
 		final TextView tv = (TextView) findViewById(R.id.test);
 		TranslationTask test3 = new TranslationTask(new YouDaoTranslator(), new OnTranslateListener() {
-			private EntryParser mParser = new JsonParser();
-			
 			@Override
-			public void onTranslated(InputStream result, int state) {
-				if(state == TranslationTask.CANCELLED) {
+			public void onTranslated(WordEntry entry, Status state) {
+				if(state == TranslationTask.Status.CANCELLED) {
 					return;
 				}
 				
-				try {
-					WordEntry entry = mParser.parse(result);
-					StringBuilder sb = new StringBuilder();
-					sb.append("word=").append(entry.getWord());
-					sb.append("basic=").append(entry.getBasicParaphrase().getDetail());
-					
-					DroidPop.debug(sb.toString());
-					tv.setText(sb.toString());
-				} catch (EntryParseException e) {
-					e.printStackTrace();
+				if(entry == null || !entry.isValid()) {
+					return;
 				}
+				
+				StringBuilder sb = new StringBuilder();
+				sb.append("word=").append(entry.getWord());
+				sb.append("basic=").append(
+						entry.getBasicParaphrase().getDetail());
+
+				DroidPop.debug(sb.toString());
+				tv.setText(sb.toString());
 			}
 		});
-		test3.execute("hello");
+		test3.translate("hello");
 	}
 	
 	@Override

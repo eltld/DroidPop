@@ -10,13 +10,34 @@ public class WordCategory {
 		public Map<String, Integer> getCategoryMap();
 	}
 	
-	public static final int NOUN_MASK = 0x0f;
-	public static final int NOUN = 0x01;
+	public static final int ADJECTIVE = 0x01;
+	public static final int ADVERB = 0x02;
+	public static final int ARTICLE = 0x04;
+	public static final int CONJUNCTION = 0x08;
+	public static final int INTERJECTION = 0x10;
+	public static final int NUMBERAL = 0x20;
+	public static final int PREPOSITION = 0x40;
+	public static final int PRONOUN = 0x80;
 	
-	public static final int VERB_MASK = 0xf0;
-	public static final int VERB = 0x10;
-	public static final int VERB_TRANSITIVE = 0x30;
-	public static final int VERB_INTRANSITIVE = 0x50;
+	public static final int NOUN_MASK = 0x0f00;
+	public static final int NOUN = 0x0100;
+	public static final int NOUN_PROPER = 0x0300;
+	public static final int NOUN_COUNTABLE = 0x0500;
+	public static final int NOUN_UNCOUNTABLE = 0X0900;
+	
+	public static final int VERB_MASK = 0xff0000;
+	public static final int VERB = 0x010000;
+	public static final int VERB_AUXILIARY = 0x030000;
+	public static final int VERB_MODAL = 0x050000;
+	public static final int VERB_OTHERS = 0x090000;
+	public static final int VERB_TRANSITIVE = 0x110000;
+	public static final int VERB_INTRANSITIVE = 0x210000;
+	
+	public static final int OTHERS_MASK = 0xff000000;
+	public static final int OTHERS_LEXICAL_PHRASE = 0x01000000;
+	public static final int OTHERS_USAGE = 0x02000000;
+	public static final int OTHERS_UNKOWN = 0x03000000;
+
 	
 	private final Map<String, Integer> mCategoryMap;
 	private SparseArray<String> mCache;

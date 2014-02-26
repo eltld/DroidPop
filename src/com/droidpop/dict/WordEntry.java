@@ -3,7 +3,7 @@ package com.droidpop.dict;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 
-import com.droidpop.dict.EntryParseException.Status;
+import com.droidpop.dict.WordEntryReader.Status;
 
 public class WordEntry {
 	
@@ -52,7 +52,7 @@ public class WordEntry {
 		}
 	}
 
-	private EntryParseException.Status mStatus;
+	private WordEntryReader.Status mStatus;
 	private String mWord;
 	private String mPhoneticSymbol;
 	private ArrayList<Paraphrase> mParaphrases;
@@ -62,7 +62,7 @@ public class WordEntry {
 	}
 
 	public boolean isValid() {
-		return (mStatus == null);
+		return (mStatus != null && mStatus == Status.SUCCESS);
 	}
 	
 	public Status getStatus() {

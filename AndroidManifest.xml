@@ -6,9 +6,17 @@
     <uses-sdk
         android:minSdkVersion="15"
         android:targetSdkVersion="17" />
-
-    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    
+    <!-- launcher config permission -->
     <uses-permission android:name="com.android.launcher.permission.INSTALL_SHORTCUT" />
+    
+    <!-- main feature permission -->
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    
+    <!-- network permission -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+    <uses-permission android:name="android.permission.INTERNET"/>
 
     <application
         android:allowBackup="true"

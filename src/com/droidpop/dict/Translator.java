@@ -1,20 +1,23 @@
 package com.droidpop.dict;
 
-import java.io.InputStream;
+import java.util.Locale;
 
-public interface Translator {
+
+public abstract class Translator {
+	protected WordEntryReader mReader;
+	
+	public Translator(WordEntryReader reader) {
+		mReader = reader;
+	}
+
 	/**
 	 * auto detect language of source text and translate
 	 * 
 	 * @param text source text to translate
 	 * @param to target language
 	 */
-	public InputStream autoTranslate(String text, String to);
-	/**
-	 * 
-	 * @return true if defualt auto detect language of source text
-	 */
-	public boolean isDefualtAutoDetect();
+	public abstract WordEntry autoTranslate(String text, String to);
+	
 	/**
 	 * manually set translation from source to target language
 	 * 
@@ -22,5 +25,17 @@ public interface Translator {
 	 * @param from source language
 	 * @param to target language
 	 */
-	public InputStream manualTranslate(String text, String from, String to);
+	public abstract WordEntry manualTranslate(String text, String from, String to);
+	
+	/**
+	 * 
+	 * @return true if defualt auto detect language of source text
+	 */
+	public boolean isDefualtAutoDetect() {
+		return false;
+	}
+	
+	public String getLocale() {
+		return Locale.CHINA.getLanguage();
+	}
 }

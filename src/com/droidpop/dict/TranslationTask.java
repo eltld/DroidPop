@@ -1,33 +1,31 @@
 package com.droidpop.dict;
 
-import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
 import android.os.AsyncTask;
 
-public class TranslationTask extends AsyncTask<String, Integer, InputStream> {
+public class TranslationTask extends AsyncTask<String, Integer, WordEntry> {
 	public static interface OnTranslateListener {
-		public void onTranslated(InputStream result, int state);
+		public void onTranslated(WordEntry entry, Status state);
 	}
-	
-	public static final int FINISHED = 0;
-	public static final int PENDING = 1;
-	public static final int RUNNING = 2;
-	public static final int CANCELLED = 3;
-	
-	private static final Map<Status, Integer> sStatusMap;
+
+	public static enum Status {
+		FINISHED, PENDING, RUNNING, CANCELLED
+	};
+
+	private static final Map<AsyncTask.Status, Status> sStatusMap;
 	static {
-		sStatusMap = new HashMap<AsyncTask.Status, Integer>();
-		sStatusMap.put(Status.FINISHED, FINISHED);
-		sStatusMap.put(Status.PENDING, PENDING);
-		sStatusMap.put(Status.RUNNING, RUNNING);
+		sStatusMap = new HashMap<AsyncTask.Status, Status>();
+		sStatusMap.put(AsyncTask.Status.FINISHED, Status.FINISHED);
+		sStatusMap.put(AsyncTask.Status.PENDING, Status.PENDING);
+		sStatusMap.put(AsyncTask.Status.RUNNING, Status.RUNNING);
 	}
-	
+
 	private Translator mTranslator;
 	private OnTranslateListener mListener;
 	private boolean mAutoCheck;
-	
+
 	public TranslationTask(Translator translator, OnTranslateListener listener) {
 		this(translator, listener, translator.isDefualtAutoDetect());
 	}
@@ -39,40 +37,51 @@ public class TranslationTask extends AsyncTask<String, Integer, InputStream> {
 		mAutoCheck = auto;
 	}
 	
+	public void translate(String text) {
+		execute(text, mTranslator.getLocale());
+	}
+	
+	public void translate(String text, String to) {
+		execute(text, to);
+	}
+	
+	public void translate(String text, String from, String to) {
+		execute(text, from, to);
+	}
+
 	@Override
-	protected InputStream doInBackground(String... params) {
-		InputStream in = null;
-		
-		if(params.length == 2 && mAutoCheck) {
+	protected WordEntry doInBackground(String... params) {
+		WordEntry entry = null;
+
+		if (params.length == 2 && mAutoCheck) {
 			String text = params[0];
 			String to = params[1];
-			
-			in = mTranslator.autoTranslate(text, to);
-		} else if(params.length == 3 && !mAutoCheck) {
+
+			entry = mTranslator.autoTranslate(text, to);
+		} else if (params.length == 3 && !mAutoCheck) {
 			String text = params[0];
 			String from = params[1];
 			String to = params[2];
-			
-			in = mTranslator.manualTranslate(text, from, to);
+
+			entry = mTranslator.manualTranslate(text, from, to);
 		}
-		
-		return in;
+
+		return entry;
 	}
-	
+
 	@Override
-	protected void onPostExecute(InputStream result) {
-		if(mListener != null) {
+	protected void onPostExecute(WordEntry result) {
+		if (mListener != null) {
 			mListener.onTranslated(result, sStatusMap.get(getStatus()));
 		}
 		super.onPostExecute(result);
 	}
-	
+
 	@Override
-	protected void onCancelled(InputStream result) {
-		if(mListener != null) {
-			mListener.onTranslated(result, CANCELLED);
+	protected void onCancelled(WordEntry result) {
+		if (mListener != null) {
+			mListener.onTranslated(result, Status.CANCELLED);
 		}
 		super.onCancelled(result);
 	}
-
 }
