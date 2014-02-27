@@ -19,6 +19,8 @@ import com.droidpop.dict.EntryParser;
 import com.droidpop.dict.WordCategory;
 import com.droidpop.dict.WordEntry;
 import com.droidpop.dict.WordEntry.Paraphrase;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 public class YouDaoJsonParser implements EntryParser {
 	protected static final WordCategory sCategory;
@@ -52,12 +54,15 @@ public class YouDaoJsonParser implements EntryParser {
 	public WordEntry parse(InputStream in) throws EntryParseException {
 		try {
 			BufferedReader br = new BufferedReader(new InputStreamReader(in, mEncode));
-			char[] json = new char[1024];
-			CharBuffer buffer = CharBuffer.wrap(json);
-			br.read(buffer);
-			JSONObject jobj = new JSONObject(new String(json));
-			System.out.println(jobj.toString(2)); // TODO:
+//			char[] json = new char[1024];
+//			CharBuffer buffer = CharBuffer.wrap(json);
+//			br.read(buffer);
+//			JSONObject jobj = new JSONObject(new String(json));
+//			System.out.println(jobj.toString(2));
 			
+			Gson gson = new GsonBuilder().create();
+			YouDaoJsonResponse response = gson.fromJson(br, YouDaoJsonResponse.class);
+			System.out.println(response.toString());
 			
 			JsonReader reader = new JsonReader(new InputStreamReader(in, mEncode));
 			
