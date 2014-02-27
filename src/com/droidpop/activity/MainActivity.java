@@ -1,6 +1,6 @@
 package com.droidpop.activity;
 
-import java.io.InputStream;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 
 import android.app.Activity;
@@ -14,14 +14,12 @@ import com.droidpop.R;
 import com.droidpop.app.DroidPop;
 import com.droidpop.app.ScreenCapManager;
 import com.droidpop.app.ScreenCapManager.ScreenCapTaskDispatcher;
-import com.droidpop.dict.EntryParseException;
-import com.droidpop.dict.EntryParser;
-import com.droidpop.dict.WordEntryReader;
 import com.droidpop.dict.TranslationTask;
-import com.droidpop.dict.TranslationTask.Status;
-import com.droidpop.dict.WordEntry;
 import com.droidpop.dict.TranslationTask.OnTranslateListener;
-import com.droidpop.dict.youdao.YouDaoJsonParser;
+import com.droidpop.dict.TranslationTask.Status;
+import com.droidpop.dict.WordCategory;
+import com.droidpop.dict.WordEntry;
+import com.droidpop.dict.WordEntry.Paraphrase;
 import com.droidpop.dict.youdao.YouDaoTranslator;
 
 public class MainActivity extends Activity {
@@ -71,10 +69,12 @@ public class MainActivity extends Activity {
 				}
 				
 				StringBuilder sb = new StringBuilder();
-				sb.append("word=").append(entry.getWord());
-				sb.append("basic=").append(
-						entry.getBasicParaphrase().getDetail());
-
+				sb.append(entry.getWord());
+				final String NEW_LINE = "\n\t";
+				for (WeakReference<Paraphrase> ref : entry.getParaphrasesBy(WordCategory.BASIC_CATEGORY)) {
+					sb.append(NEW_LINE).append(ref.get().getDetail());
+				}
+				
 				DroidPop.debug(sb.toString());
 				tv.setText(sb.toString());
 			}

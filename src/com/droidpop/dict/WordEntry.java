@@ -120,10 +120,10 @@ public class WordEntry {
 		return null;
 	}
 	
-	public ArrayList<WeakReference<Paraphrase>> getParaphrasesBy(int category) {
+	public ArrayList<WeakReference<Paraphrase>> getParaphrasesBy(int mask) {
 		ArrayList<WeakReference<Paraphrase>> subRefs = new ArrayList<WeakReference<Paraphrase>>();
 		for(Paraphrase paraphrase : mParaphrases) {
-			if(paraphrase.getCategory() == category) {
+			if((paraphrase.getCategory() & mask) != 0) {
 				subRefs.add(new WeakReference<Paraphrase>(paraphrase));
 			}
 		}

@@ -10,8 +10,8 @@ import com.droidpop.app.DroidPop;
 import com.droidpop.dict.EntryParseException;
 import com.droidpop.dict.Translator;
 import com.droidpop.dict.WordCategory;
-import com.droidpop.dict.WordEntry;
 import com.droidpop.dict.WordCategory.WordCategoryConfig;
+import com.droidpop.dict.WordEntry;
 
 
 public class YouDaoTranslator extends Translator {
@@ -20,18 +20,29 @@ public class YouDaoTranslator extends Translator {
 	}
 
 	public static class CategoryConfig implements WordCategoryConfig {
+		
 		private static final HashMap<String, Integer> sConfigMap;
 		static {
 			sConfigMap = new HashMap<String, Integer>();
 			
+			sConfigMap.put("adj.", WordCategory.ADJECTIVE);
+			sConfigMap.put("adv.", WordCategory.ADVERB);
+			sConfigMap.put("art.", WordCategory.ARTICLE);
+			sConfigMap.put("conj.", WordCategory.CONJUNCTION);
 			sConfigMap.put("int.", WordCategory.INTERJECTION);
+			sConfigMap.put("num.", WordCategory.NUMBERAL);
+			sConfigMap.put("prep.", WordCategory.PREPOSITION);
+			sConfigMap.put("pron.", WordCategory.PRONOUN);
+			
 			sConfigMap.put("n.", WordCategory.NOUN);
+			
+			sConfigMap.put("v.", WordCategory.VERB);
 			sConfigMap.put("vt.", WordCategory.VERB_TRANSITIVE);
 			sConfigMap.put("vi.", WordCategory.VERB_INTRANSITIVE);
 		}
 
 		public static final String abbrGategoryOf(String paraphrase) {
-			return paraphrase.substring(0, paraphrase.indexOf('.'));
+			return paraphrase.substring(0, paraphrase.indexOf('.') + 1);
 		}
 		
 		@Override

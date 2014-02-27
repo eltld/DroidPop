@@ -5,20 +5,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
-import java.nio.CharBuffer;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-
-import org.json.JSONObject;
-
-import android.util.JsonReader;
 
 import com.droidpop.dict.EntryParseException;
 import com.droidpop.dict.EntryParser;
 import com.droidpop.dict.WordCategory;
 import com.droidpop.dict.WordEntry;
 import com.droidpop.dict.WordEntry.Paraphrase;
+import com.droidpop.dict.youdao.YouDaoJsonResponse.Web;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -29,7 +23,6 @@ public class YouDaoJsonParser implements EntryParser {
 	}
 	
 	protected final String mEncode; // YouDao APIv1.1 encode: UTF-8
-	protected final HashMap<String, Tag> mTagMap;
 
 	public YouDaoJsonParser() {
 		this(DEFAULT_ENCODE);
@@ -37,55 +30,28 @@ public class YouDaoJsonParser implements EntryParser {
 
 	public YouDaoJsonParser(String encode) {
 		mEncode = encode;
-
-		mTagMap = new HashMap<String, Tag>();
-
-		mTagMap.put("translation", Tag.TRANSLATION);
-		mTagMap.put("basic", Tag.BASIC_PARAPHRASE);
-		mTagMap.put("phonetic", Tag.PHONETIC_SYMBOL);
-		mTagMap.put("explains", Tag.PARAPHRASES);
-		mTagMap.put("errorCode", Tag.STATUS_CODE);
-		mTagMap.put("web", Tag.WEB_ENTRY_MINING);
-		mTagMap.put("key", Tag.KEY);
-		mTagMap.put("value", Tag.VALUE);
 	}
 
 	@Override
 	public WordEntry parse(InputStream in) throws EntryParseException {
 		try {
-			BufferedReader br = new BufferedReader(new InputStreamReader(in, mEncode));
-//			char[] json = new char[1024];
-//			CharBuffer buffer = CharBuffer.wrap(json);
-//			br.read(buffer);
-//			JSONObject jobj = new JSONObject(new String(json));
-//			System.out.println(jobj.toString(2));
-			
-			Gson gson = new GsonBuilder().create();
-			YouDaoJsonResponse response = gson.fromJson(br, YouDaoJsonResponse.class);
-			System.out.println(response.toString());
-			
-			JsonReader reader = new JsonReader(new InputStreamReader(in, mEncode));
-			
+			BufferedReader reader = new BufferedReader(new InputStreamReader(in, mEncode));
 			try {
+				Gson gson = new GsonBuilder().create();
+				YouDaoJsonResponse response = gson.fromJson(reader,
+						YouDaoJsonResponse.class);
+
 				WordEntry entry = new WordEntry();
 				
-				while (reader.hasNext()) {
-					String key = reader.nextName();
-					switch (mTagMap.get(key)) {
-					case STATUS_CODE:
-						entry.setStatus(readStatus(reader));
-						if(!entry.isValid()) {
-							return entry;
-						}
-						break;
-					case BASIC_PARAPHRASE:
-						entry = readBasicParaphrase(entry, reader);
-						break;
-					default:
-						reader.skipValue();
-						break;
-					}
+				entry.setStatus(getStatus(response.getErrorCode()));
+				if (!entry.isValid()) {
+					return null;
 				}
+				entry.setWord(response.getQuery());
+				entry.setPhoneticSymbol(response.getBasic().getPhonetic());
+				entry.setParaphrases(getParaphrases(
+						response.getBasic().getExplains(),
+						response.getWeb()));
 
 				return entry;
 			} finally {
@@ -94,14 +60,12 @@ public class YouDaoJsonParser implements EntryParser {
 		} catch (UnsupportedEncodingException e) {
 			throw new EntryParseException(e.toString(), Status.UNSUPPORTED_ENCODING_EXCEPTION);
 		} catch (IOException e) {
-			throw new EntryParseException(e.toString(), Status.IO_EXCEPTION);
-		} catch (Exception e) {
-			throw new EntryParseException(e.toString(), Status.UNDEFINED_EXCEPTION);
-		}
+			throw new EntryParseException(e.getMessage(), Status.IO_EXCEPTION);
+		}	
 	}
 
-	protected Status readStatus(JsonReader reader) throws IOException {
-		switch (reader.nextInt()) {
+	private Status getStatus(int errorCode) {
+		switch (errorCode) {
 		case 0:
 			return Status.SUCCESS;
 		case 20:
@@ -117,47 +81,28 @@ public class YouDaoJsonParser implements EntryParser {
 		}
 	}
 	
-	protected List<String> readStringArray(JsonReader reader) throws IOException {
-		ArrayList<String> arrStr = new ArrayList<String>();
+	private ArrayList<Paraphrase> getParaphrases(String[] explains, Web[] webEntries) {
+		ArrayList<Paraphrase> paraphrases = new ArrayList<Paraphrase>();
 		
-		reader.beginArray();
-		while(reader.hasNext()) {
-			arrStr.add(reader.nextString());
+		for(String explain : explains) {
+			String abbr = YouDaoTranslator.CategoryConfig.abbrGategoryOf(explain);
+			paraphrases.add(new Paraphrase(sCategory.getCategory(abbr), explain));
 		}
-		reader.endArray();
 		
-		return arrStr;
-	}
-	
-	private WordEntry readBasicParaphrase(WordEntry entry, JsonReader reader) throws IOException {
-		reader.beginObject();
-		while (reader.hasNext()) {
-			String key = reader.nextName();
-			switch (mTagMap.get(key)) {
-			case PHONETIC_SYMBOL:
-				entry.setPhoneticSymbol(reader.nextString());
-				break;
-			case PARAPHRASES:
-				List<String> data = readStringArray(reader);
-				ArrayList<Paraphrase> paraphrases = new ArrayList<Paraphrase>();
-				for (String detail : data) {
-					String abbr = YouDaoTranslator.CategoryConfig
-							.abbrGategoryOf(detail);
-					Paraphrase paraphrase = new Paraphrase(
-							sCategory.getCategory(abbr), detail);
-					paraphrases.add(paraphrase);
-				}
-				entry.setParaphrases(paraphrases);
-				break;
-
-			default:
-				reader.skipValue();
-				break;
+		for(Web entry : webEntries) {
+			StringBuilder sb = new StringBuilder();
+			sb.append(entry.getKey());
+			sb.append(' ');
+			for(String value : entry.getValue()) {
+				sb.append(value);
+				sb.append("；"); // TODO: using string.xml
 			}
+			Paraphrase paraphrase = new Paraphrase(
+					WordCategory.OTHERS_WEB_ENTRY, sb.toString());
+			paraphrases.add(paraphrase);
 		}
-		reader.endObject();
 		
-		return entry;
+		return paraphrases;
 	}
 	
 }

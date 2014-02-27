@@ -10,6 +10,9 @@ public class WordCategory {
 		public Map<String, Integer> getCategoryMap();
 	}
 	
+	public static final int ALL_CATEGORY = 0xffffffff;
+	public static final int BASIC_CATEGORY = 0x00ffffff;
+	
 	public static final int ADJECTIVE = 0x01;
 	public static final int ADVERB = 0x02;
 	public static final int ARTICLE = 0x04;
@@ -36,7 +39,8 @@ public class WordCategory {
 	public static final int OTHERS_MASK = 0xff000000;
 	public static final int OTHERS_LEXICAL_PHRASE = 0x01000000;
 	public static final int OTHERS_USAGE = 0x02000000;
-	public static final int OTHERS_UNKOWN = 0x03000000;
+	public static final int OTHERS_WEB_ENTRY = 0x03000000;
+	public static final int OTHERS_UNKOWN = 0x04000000;
 
 	
 	private final Map<String, Integer> mCategoryMap;
