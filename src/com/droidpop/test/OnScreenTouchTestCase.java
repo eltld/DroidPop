@@ -31,7 +31,7 @@ public class OnScreenTouchTestCase implements OnScreenTouchListener {
 		DroidPop app = DroidPop.getApplication();
 		ScreenCoordsManager mgr = (ScreenCoordsManager) app
 				.getAppService(DroidPop.SCREEN_COORDS_SERVICE);
-		mgr.setOnScreenTouchListener(this);
+		mgr.addOnScreenTouchListener(this);
 	}
 
 	public void tearDown() {

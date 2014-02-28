@@ -27,9 +27,9 @@ public class ScreenCoordsManager implements ServiceManager {
 		mListeners = new ArrayList<OnScreenTouchListener>();
 	}
 	
-	public void setOnScreenTouchListener(OnScreenTouchListener listener) {
+	public void addOnScreenTouchListener(OnScreenTouchListener listener) {
 		if (mService != null) {
-			mService.setOnScreenTouchListener(listener);
+			mService.addOnScreenTouchListener(listener);
 		} else {
 			mListeners.add(listener);
 		}
@@ -72,7 +72,7 @@ public class ScreenCoordsManager implements ServiceManager {
 			
 			if(!mListeners.isEmpty()) {
 				for (OnScreenTouchListener listener : mListeners) {
-					mService.setOnScreenTouchListener(listener);
+					mService.addOnScreenTouchListener(listener);
 				}
 				mListeners.clear();
 			}

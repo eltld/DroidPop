@@ -2,8 +2,6 @@ package com.droidpop.app;
 
 import junit.framework.Assert;
 import me.wtao.utils.Logcat;
-import me.wtao.utils.su.OnShellProcessingListener;
-import me.wtao.utils.su.RootManager;
 import android.content.Context;
 import android.content.Intent;
 
@@ -12,6 +10,7 @@ import com.droidpop.R;
 public class DroidPop {
 	public static final int SCREEN_COORDS_SERVICE = 0;
 	public static final int SCREEN_CAPTURE_SERVICE = 1;
+	public static final int CLIP_TRANSLATION_SERVICE = 2;
 	
 	public static final int LEVEL_VERBOSE = 0;
 	public static final int LEVEL_DEBUG = 1;
@@ -26,8 +25,9 @@ public class DroidPop {
 	}
 	
 	private Context mContext;
-	private ScreenCoordsManager mScreenCoordsManager;
-	private ScreenCapManager mScreenCapManager;
+	private final ScreenCoordsManager mScreenCoordsManager;
+	private final ScreenCapManager mScreenCapManager;
+	private final ClipTranslationManager mClipTranslationManager;
 	
 	public static void initFromLauncherActivity(Context context) {
 		if(sDroidPop == null) {
@@ -52,6 +52,10 @@ public class DroidPop {
 	static {
 		sLogcat.setOn();
 		sLogcat.calibrateIndexOfCaller(4);
+	}
+	
+	public static boolean isDebuggable() {
+		return sLogcat.isDebuggable();
 	}
 	
 	public static void debug(Object... msg_segs) {
@@ -114,6 +118,10 @@ public class DroidPop {
 		case SCREEN_CAPTURE_SERVICE:
 			manager = mScreenCapManager;
 			break;
+		case CLIP_TRANSLATION_SERVICE:
+			mClipTranslationManager.startService();
+			manager = mClipTranslationManager;
+			break;
 		}
 		return manager;
 	}
@@ -126,12 +134,16 @@ public class DroidPop {
 		case SCREEN_CAPTURE_SERVICE:
 			mScreenCapManager.stopService();
 			break;
+		case CLIP_TRANSLATION_SERVICE:
+			mClipTranslationManager.stopService();
+			break;
 		}
 	}
 	
 	public void stopService() {
 		mScreenCoordsManager.stopService();
 		mScreenCapManager.stopService();
+		mClipTranslationManager.stopService();
 	}
 	
 	private DroidPop(Context context) {
@@ -164,6 +176,7 @@ public class DroidPop {
 		
 		mScreenCoordsManager = new ScreenCoordsManager(mContext);
 		mScreenCapManager = new ScreenCapManager(mContext);
+		mClipTranslationManager = ClipTranslationManager.getManager(mContext);
 	}
 	
 }

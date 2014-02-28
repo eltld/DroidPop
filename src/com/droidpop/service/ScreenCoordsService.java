@@ -93,7 +93,7 @@ public class ScreenCoordsService extends Service {
 		return mLocalBinder;
 	}
 	
-	public void setOnScreenTouchListener(OnScreenTouchListener listener) {
+	public void addOnScreenTouchListener(OnScreenTouchListener listener) {
 		if (listener instanceof OnScreenTouchListener) {
 			synchronized (mOnScreenTouchListeners) {
 				mOnScreenTouchListeners
