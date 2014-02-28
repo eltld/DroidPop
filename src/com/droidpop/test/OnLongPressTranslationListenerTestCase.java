@@ -1,6 +1,5 @@
 package com.droidpop.test;
 
-import me.wtao.utils.Logcat;
 import android.R;
 import android.app.Activity;
 import android.content.Context;
@@ -23,7 +22,9 @@ public class OnLongPressTranslationListenerTestCase implements TestCase, OnTouch
 	
 	/**
 	 * compare with OnLongPressTranslationListener$OnScreenLongPressListener,
-	 * which cannot detect the onShow event, strange :(
+	 * which cannot detect the onShow event, strange :(<br>
+	 * <br>
+	 * <b>problem solved but why? it look likes depending on uptimeMillis()</b>
 	 */
 	private GestureDetector mDetector;
 	private GestureDetector.OnGestureListener listener = new GestureDetector.SimpleOnGestureListener() {
@@ -83,7 +84,7 @@ public class OnLongPressTranslationListenerTestCase implements TestCase, OnTouch
 
 	@Override
 	public boolean onTouch(View v, MotionEvent event) {
-		DroidPop.debug(Logcat.shortFor(event, "action", "x", "y"));
+//		DroidPop.debug(Logcat.shortFor(event, "action", "x", "y"));
 		return mDetector.onTouchEvent(event);
 	}
 	

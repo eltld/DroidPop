@@ -2,7 +2,7 @@ package com.droidpop.test;
 
 /**
  * 
- * <b>Note: just for temporarily unit test, improvement later</b>
+ * <b>Note: simplified, just for temporarily unit test, improve in the future</b>
  * 
  * @author tagwang
  *

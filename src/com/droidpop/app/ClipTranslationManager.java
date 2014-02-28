@@ -1,12 +1,18 @@
 package com.droidpop.app;
 
 import java.lang.ref.WeakReference;
+import java.sql.Date;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Locale;
 
 import me.wtao.utils.Logcat;
+import android.annotation.SuppressLint;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.os.Handler;
+import android.os.Message;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.MotionEvent.PointerCoords;
@@ -37,9 +43,8 @@ public class ClipTranslationManager implements ServiceManager, ClipboardManager.
 					if(sOnScreenLongPressListener == null) {
 						sOnScreenLongPressListener = new OnScreenLongPressListener(context);
 						
-						ScreenCoordsManager mgr = (ScreenCoordsManager) DroidPop
-								.getApplication().getAppService(
-										DroidPop.SCREEN_COORDS_SERVICE);
+						ScreenCoordsManager mgr = (ScreenCoordsManager) DroidPop.getApplication()
+								.getAppService(DroidPop.SCREEN_COORDS_SERVICE);
 						mgr.addOnScreenTouchListener(sOnScreenLongPressListener);
 						
 						DroidPop.debug("init ok.");
@@ -67,11 +72,31 @@ public class ClipTranslationManager implements ServiceManager, ClipboardManager.
 		}
 		
 		private static class OnScreenLongPressListener implements OnScreenTouchListener {
-
+			
+			/**
+		     * Defines the default duration in milliseconds before a press turns into
+		     * a long press
+		     */
+		    private static final int DEFAULT_LONG_PRESS_TIMEOUT = 500;
+		    /**
+		     * ViewConfiguration.getLongPressTimeout(); defualt {@link #DEFAULT_LONG_PRESS_TIMEOUT}.
+		     */
+			private static final int LONGPRESS_TIMEOUT = DEFAULT_LONG_PRESS_TIMEOUT;
+			/**
+		     * Defines the duration in milliseconds we will wait to see if a touch event
+		     * is a tap or a scroll. If the user does not move within this interval, it is
+		     * considered to be a tap.
+		     */
+		    private static final int TAP_TIMEOUT = 180;
+			
+			// constants for Message.what used by GestureHandler below
+		    private static final int SHOW_PRESS = 1;
+		    private static final int LONG_PRESS = 2;
+			
 			private boolean mIsLongPress = false;
 			private PointerCoords mCoords = new PointerCoords();
-			
-			private GestureDetector.OnGestureListener listener = new GestureDetector.SimpleOnGestureListener() {
+
+			private final GestureDetector.OnGestureListener mListener = new GestureDetector.SimpleOnGestureListener() {
 				@Override
 				public boolean onDown(MotionEvent event) {
 					synchronized (mCoords) {
@@ -95,21 +120,74 @@ public class ClipTranslationManager implements ServiceManager, ClipboardManager.
 				}
 			};
 
-//			private UiThreadHandler mUiHandler;
-			private GestureDetector mDetector;
-
+			private final boolean mIsLongpressEnabled = true;
+			private final Handler mHandler;
+			private MotionEvent mCurrentDownEvent;
+			
 			public OnScreenLongPressListener(Context context) {
-//				mUiHandler = new UiThreadHandler();
-//				mDetector = new GestureDetector(context, listener,
-//						mUiHandler.getHandler());
+				this(context, null);
+			}
+			
+			public OnScreenLongPressListener(Context context, Handler handler) {
+//				// TODO: test the solution, which onShow() not work;
+//				// use other specified 'GestureDetector' instead but more jobs :(
+//				mDetector = new GestureDetector(context, mListener, handler);
 				
-				mDetector = new GestureDetector(context, listener);
+				if (handler != null) {
+		            mHandler = new GestureHandler(handler);
+		        } else {
+		            mHandler = new GestureHandler();
+		        }
 			}
 
 			@Override
 			public void onScreenTouch(MotionEvent event) {
 				DroidPop.log(DroidPop.LEVEL_VERBOSE, Logcat.shortFor(event));
-				mDetector.onTouchEvent(event);
+				
+				switch (event.getAction() & MotionEvent.ACTION_MASK) {
+				case MotionEvent.ACTION_DOWN:
+					if (mCurrentDownEvent != null) {
+		                mCurrentDownEvent.recycle();
+		            }
+		            mCurrentDownEvent = MotionEvent.obtain(event);
+					mListener.onDown(event);
+		            
+		            boolean succeeded = false;
+					if (mIsLongpressEnabled) {
+						mHandler.removeMessages(LONG_PRESS);
+//						succeeded = mHandler.sendEmptyMessageAtTime(LONG_PRESS,
+//								mCurrentDownEvent.getDownTime() + TAP_TIMEOUT + LONGPRESS_TIMEOUT);
+
+						// good luck, it works; but why? it look likes depending on uptimeMillis()
+						succeeded = mHandler.sendEmptyMessageDelayed(LONG_PRESS, 
+								TAP_TIMEOUT + LONGPRESS_TIMEOUT);
+					} else {
+						// show press, short time
+//						succeeded = mHandler.sendEmptyMessageAtTime(SHOW_PRESS,
+//								mCurrentDownEvent.getDownTime() + TAP_TIMEOUT);
+						
+						succeeded = mHandler.sendEmptyMessageDelayed(LONG_PRESS, 
+								TAP_TIMEOUT + LONGPRESS_TIMEOUT);
+					}
+					
+					if(DroidPop.isDebuggable()) {
+						SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.CHINA);
+						Date currentDate = new Date(mCurrentDownEvent.getDownTime());
+						DroidPop.debug("sendEmptyMessageAtTime() ", ((succeeded) ? "succeeded" : "failed")
+								, ", time stamp: ", sdf.format(currentDate));
+					}
+					break;
+
+				case MotionEvent.ACTION_UP:
+				case MotionEvent.ACTION_CANCEL:
+					if(mIsLongpressEnabled) {
+						mHandler.removeMessages(LONG_PRESS);
+					} else {
+						mHandler.removeMessages(SHOW_PRESS);
+					}
+					break;
+				}
+				
 			}
 
 			public PointerCoords getPointerCoords() {
@@ -122,6 +200,41 @@ public class ClipTranslationManager implements ServiceManager, ClipboardManager.
 					}
 				}
 			}
+			
+			@SuppressLint("HandlerLeak")
+			private class GestureHandler extends Handler {
+		        GestureHandler() {
+		            super(); // main thread
+		        }
+
+				GestureHandler(Handler handler) {
+		            super(handler.getLooper());
+		            DroidPop.debug(Thread.currentThread());
+		        }
+
+		        @Override
+		        public void handleMessage(Message msg) {
+		        	DroidPop.debug("recieved and handle...");
+		        	
+		            switch (msg.what) {
+		            case SHOW_PRESS:
+		                mListener.onShowPress(mCurrentDownEvent);
+		                break;
+		                
+		            case LONG_PRESS:
+		                dispatchLongPress();
+		                break;
+
+		            default:
+		                throw new RuntimeException("Unknown message " + msg); //never
+		            }
+		        }
+		    }
+			
+			private void dispatchLongPress() {
+		        mListener.onLongPress(mCurrentDownEvent);
+		    }
+
 		};
 		
 	}
