@@ -10,7 +10,7 @@ import com.droidpop.app.DroidPop;
 import com.droidpop.app.ScreenCoordsManager;
 import com.droidpop.view.OnScreenTouchListener;
 
-public class OnScreenTouchTestCase implements OnScreenTouchListener {
+public class OnScreenTouchTestCase implements TestCase, OnScreenTouchListener {
 
 	private final UiThreadHandler mUiHandler = new UiThreadHandler();
 	private MotionEvent mPrevEvent = null;
@@ -27,6 +27,7 @@ public class OnScreenTouchTestCase implements OnScreenTouchListener {
 		mStatusBar.show();
 	}
 	
+	@Override
 	public void setUp() {
 		DroidPop app = DroidPop.getApplication();
 		ScreenCoordsManager mgr = (ScreenCoordsManager) app
@@ -34,6 +35,7 @@ public class OnScreenTouchTestCase implements OnScreenTouchListener {
 		mgr.addOnScreenTouchListener(this);
 	}
 
+	@Override
 	public void tearDown() {
 		DroidPop app = DroidPop.getApplication();
 		app.stopService(DroidPop.SCREEN_COORDS_SERVICE);
