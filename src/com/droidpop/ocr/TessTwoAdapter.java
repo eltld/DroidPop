@@ -1,104 +1,146 @@
 package com.droidpop.ocr;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FilenameFilter;
 import java.util.ArrayList;
 
+import junit.framework.Assert;
 import me.wtao.io.FileUtils;
-
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.graphics.Rect;
-import android.os.Environment;
-import android.util.Log;
 
+import com.droidpop.app.DroidPop;
+import com.googlecode.tesseract.android.ResultIterator;
 import com.googlecode.tesseract.android.TessBaseAPI;
+import com.googlecode.tesseract.android.TessBaseAPI.PageIteratorLevel;
 
-public class TessTwoAdapter implements OcrAdapter {
+public class TessTwoAdapter extends OcrAdapter {
+
+	private final int MEAN_CONFIDENCE_THREHOLD = 80;
 
 	private static final String DEFAULT_LANG = "eng";
+	private static final String TESS_DATA = "tesseract-ocr/tessdata/";
+	private static final String DEFAULT_LANG_PACKAGE = "tess2/tesseract-ocr.eng.zip";
 	private static final String FILE_FORMAT = ".traineddata";
-
-	// assets path within the apk
-	private static final String TESS_DATA = "tessdata/";
-	// external directory need check, so delayed initialized
-	private final String OCR_DIR;
-
+	
 	private Context mContext;
-	private String mLanguage = DEFAULT_LANG;
+	private String mLanguage;
 
 	private TessBaseAPI baseApi;
 	private Rect mRegionRect;
+	
 
 	public TessTwoAdapter(Context context) {
 		this(context, null);
 	}
 
+	/**
+	 * 
+	 * @param lang not used but reserved
+	 */
 	public TessTwoAdapter(Context context, String lang) {
 		mContext = context;
-
-		// throw exception if external storage removable
-		if (!Environment.getExternalStorageState().equals(
-				Environment.MEDIA_MOUNTED)) {
-			Log.e(TessBaseAPI.class.getCanonicalName(),
-					"external storage not ready");
-		}
-		OCR_DIR = Environment.getExternalStorageDirectory().toString()
-				+ "/droidbubble/tess2/";
-
-		if (lang != null) {
-			mLanguage = lang;
-		}
-
-		if (!checkEnv()) {
-			if (!initEnv()) {
-				Log.e(TessBaseAPI.class.getCanonicalName(),
-						"environment initialization failed");
+		mLanguage = DEFAULT_LANG;
+		
+		if (!checkEnvironment()) {
+			try {
+				init();
+			} catch (FileNotFoundException e) {
+				DroidPop.log(DroidPop.LEVEL_WARN, e.getMessage(), " not found!");
+			} catch (Exception e) {
+				DroidPop.log(DroidPop.LEVEL_ERROR, e);
 			}
 		}
+		
+		File tess2Dir = new File(getOcrDir(), TESS_DATA);
+		String datapath = tess2Dir.getAbsolutePath();
 
 		baseApi = new TessBaseAPI();
-		baseApi.setDebug(true); // false when release
-		if (!baseApi.init(OCR_DIR, mLanguage, TessBaseAPI.OEM_TESSERACT_ONLY)) {
-			Log.e(TessBaseAPI.class.getCanonicalName(),
+		baseApi.setDebug(true); // TODO: false when release
+		if (!baseApi.init(datapath, mLanguage, TessBaseAPI.OEM_TESSERACT_ONLY)) {
+			DroidPop.log(DroidPop.LEVEL_ERROR,
 					"initialize tesseract engine failed");
 		}
 		mRegionRect = new Rect();
 	}
 
-	@Override
-	public boolean checkEnv() {
-		String langPath = OCR_DIR + TESS_DATA + mLanguage + FILE_FORMAT;
+	public boolean checkEnvironment() {
+		try {
+			File ocrDir = getOcrDir();
+			File tess2Dir = new File(ocrDir, TESS_DATA);
+			LanguagePackageFilter filter = new LanguagePackageFilter(mLanguage);
+			String[] ls = tess2Dir.list(filter);
+			return (ls.length == 1);
+		} catch (Exception e) {
+			return false;
+		}
+	}
 
-		return new File(langPath).exists();
+	private void init() throws FileNotFoundException {
+		File ocrDir = getOcrDir();
+		
+		File tess2Dir = new File(ocrDir, TESS_DATA);
+		if (!(tess2Dir.mkdir() || tess2Dir.isDirectory())) {
+			throw new FileNotFoundException(tess2Dir.getAbsolutePath());
+		}
+
+		LanguagePackageFilter filter = new LanguagePackageFilter(mLanguage);
+		String[] ls = tess2Dir.list(filter);
+		if(ls.length == 0) {
+			// not found, copy
+			Context context = mContext.getApplicationContext();
+			StringBuilder sb = new StringBuilder(context.getCacheDir().getAbsolutePath());
+			sb.append("/lang.zip");
+			final String path = sb.toString();
+			
+			FileUtils.copyFromAssets(mContext, path, DEFAULT_LANG_PACKAGE);
+			
+			File tmpZip = new File(path);
+			if (tmpZip.exists()) {
+				FileUtils.unzip(ocrDir.getAbsolutePath(), path);
+				ls = tess2Dir.list(filter);
+			} else {
+				throw new FileNotFoundException(path);
+			}
+		}
+		
+		File langFile = null;
+		if(ls.length == 1){
+			// find the only one
+			Assert.assertEquals(1, ls.length);
+			langFile = new File(ls[0]);
+		}
+		
+		if (langFile == null || !langFile.exists()) {
+			throw new FileNotFoundException(langFile.getAbsolutePath());
+		}
 	}
 
 	@Override
-	public boolean initEnv() {
-		File dir = new File(OCR_DIR + TESS_DATA);
-		if (!(dir.mkdirs() || dir.isDirectory())) {
-			Log.e(TessTwoAdapter.class.getCanonicalName(),
-					"assert that should not reach here");
-		}
-
-		final String langPkg = TESS_DATA + mLanguage + FILE_FORMAT;
-		final String langPath = OCR_DIR + langPkg;
-		if (!(new File(langPath).exists())) {
-			FileUtils.copy(mContext, langPath, langPkg);
-		}
-
-		return checkEnv();
-	}
-
-	@Override
-	public boolean loadImage(File file) {
+	public boolean recognize(Bitmap bitmap) {
 		baseApi.clear();
-		baseApi.setImage(file);
+		baseApi.setImage(bitmap);
 		initRegionRect();
+		ResultIterator iter = baseApi.getResultIterator();
+		return (iter != null && iter.next(PageIteratorLevel.RIL_SYMBOL));
+	}
+
+	@Override
+	public boolean isConfidence() {
 		return (baseApi.meanConfidence() < MEAN_CONFIDENCE_THREHOLD);
 	}
 
+	/**
+	 * @param point
+	 *            the first touch point on screen
+	 * @param encode
+	 *            ignored, default return UTF-8 text
+	 */
 	@Override
-	public String getUTF8Text(Point point) {
+	public String getText(Point point, String encode) {
 		ArrayList<Rect> wordsRects = baseApi.getWords().getBoxRects();
 
 		String recognizedText = null;
@@ -114,12 +156,17 @@ public class TessTwoAdapter implements OcrAdapter {
 						.replaceAll("[^a-zA-Z0-9]+", " ");
 
 				baseApi.setRectangle(mRegionRect);
-				
+
 				return recognizedText;
 			}
 		}
 
 		return null;
+	}
+	
+	@Override
+	protected Context getContext() {
+		return mContext;
 	}
 
 	private void initRegionRect() {
@@ -143,5 +190,21 @@ public class TessTwoAdapter implements OcrAdapter {
 
 		mRegionRect.set(left, top, right, bottom);
 	}
+	
+	private class LanguagePackageFilter implements FilenameFilter {
+
+		private final String mLanguage;
+		
+		public LanguagePackageFilter(String target) {
+			StringBuilder sb = new StringBuilder(target).append(FILE_FORMAT);
+			mLanguage = sb.toString();
+		}
+		
+		@Override
+		public boolean accept(File dir, String filename) {
+			return filename.endsWith(mLanguage);
+		}
+		
+	};
 
 }

@@ -2,49 +2,54 @@ package com.droidpop.ocr;
 
 import java.io.File;
 
+import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Point;
 
-public interface OcrAdapter {
-	/**
-	 * it's considered usable when mean confidence (between 0 and 100) is
-	 * greater than {@value #MEAN_CONFIDENCE_THREHOLD}
-	 */
-	public final int MEAN_CONFIDENCE_THREHOLD = 80;
+import com.droidpop.app.DroidPop;
 
+public abstract class OcrAdapter {
 	/**
-	 * it's recommend check it within {@link #checkEnv()}
+	 * private directory using context.getDir(OCR_DIR, Context.MODE_PRIVATE).
 	 * 
-	 * @return true if and only if environment initialization all ready
 	 */
-	public boolean checkEnv();
-
-	/**
-	 * initialized first before using other methods
-	 * 
-	 * @return true when everything runs OK; otherwise false
-	 */
-	public boolean initEnv();
+	protected static final String OCR_DIR = "ocr";
 
 	/**
 	 * specify the source of image to be extracted before other getter(f.e.
-	 * {@link #getUTF8Text(Point)}) method, it will auto clear up previous
+	 * {@link #getText(Point)}) method, it will auto clear up previous
 	 * recognition results and any stored image data for security reasons.
 	 * 
-	 * @param file
-	 *            instanced by you, for security you'd better check that it does
-	 *            canRead
-	 * @return true if and only if mean confidence is greater than
-	 *         {@link #MEAN_CONFIDENCE_THREHOLD}, but in false case, you can
-	 *         still go on and get the recognized text, which may be incorrect.
 	 */
-	public boolean loadImage(File file);
+	public abstract boolean recognize(Bitmap bitmap);
+
+	public abstract boolean isConfidence();
 
 	/**
+	 * {@link #getText(Point, String)} by UTF-8 encoding
+	 * 
+	 */
+	public String getText(Point point) {
+		return getText(point, "UTF-8");
+	}
+
+	/**
+	 * using {@link #isConfidence()} to check recognized result's confidence
 	 * 
 	 * @param point
 	 *            the first touch point on screen
-	 * @return if success, get the recognized text in UTF8 format; otherwise
-	 *         return null
+	 * @return if success, get the recognized text; otherwise return null
 	 */
-	public String getUTF8Text(Point point);
+	public abstract String getText(Point point, String encode);
+	
+	protected abstract Context getContext();
+	
+	protected File getOcrDir() {
+		Context context = getContext().getApplicationContext();
+		File ocrDir = context.getDir(OCR_DIR, Context.MODE_PRIVATE);
+		if (!(ocrDir.mkdir() || ocrDir.isDirectory())) {
+			DroidPop.log(DroidPop.LEVEL_WARN, ocrDir.getAbsolutePath(), " not created!");
+		}
+		return ocrDir;
+	}
 }
