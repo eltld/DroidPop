@@ -21,8 +21,10 @@ public class TessTwoAdapter extends OcrAdapter {
 
 	private final int MEAN_CONFIDENCE_THREHOLD = 80;
 
+	// never modify static string value below if you don't understand what you do
+	private static final String TESSERACT_OCR = "tesseract-ocr";
 	private static final String DEFAULT_LANG = "eng";
-	private static final String TESS_DATA = "tesseract-ocr/tessdata/";
+	private static final String TESS_DATA = TESSERACT_OCR + "/tessdata/";
 	private static final String DEFAULT_LANG_PACKAGE = "tess2/tesseract-ocr.eng.zip";
 	private static final String FILE_FORMAT = ".traineddata";
 	
@@ -55,7 +57,7 @@ public class TessTwoAdapter extends OcrAdapter {
 			}
 		}
 		
-		File tess2Dir = new File(getOcrDir(), TESS_DATA);
+		File tess2Dir = new File(getOcrDir(), TESSERACT_OCR);
 		String datapath = tess2Dir.getAbsolutePath();
 
 		baseApi = new TessBaseAPI();
@@ -82,13 +84,13 @@ public class TessTwoAdapter extends OcrAdapter {
 	private void init() throws FileNotFoundException {
 		File ocrDir = getOcrDir();
 		
-		File tess2Dir = new File(ocrDir, TESS_DATA);
-		if (!(tess2Dir.mkdir() || tess2Dir.isDirectory())) {
-			throw new FileNotFoundException(tess2Dir.getAbsolutePath());
+		File tessdataDir = new File(ocrDir, TESS_DATA);
+		if (!(tessdataDir.mkdir() || tessdataDir.isDirectory())) {
+			throw new FileNotFoundException(tessdataDir.getAbsolutePath());
 		}
 
 		LanguagePackageFilter filter = new LanguagePackageFilter(mLanguage);
-		String[] ls = tess2Dir.list(filter);
+		String[] ls = tessdataDir.list(filter);
 		if(ls.length == 0) {
 			// not found, copy
 			Context context = mContext.getApplicationContext();
@@ -101,7 +103,7 @@ public class TessTwoAdapter extends OcrAdapter {
 			File tmpZip = new File(path);
 			if (tmpZip.exists()) {
 				FileUtils.unzip(ocrDir.getAbsolutePath(), path);
-				ls = tess2Dir.list(filter);
+				ls = tessdataDir.list(filter);
 			} else {
 				throw new FileNotFoundException(path);
 			}
