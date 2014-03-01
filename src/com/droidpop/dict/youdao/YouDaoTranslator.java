@@ -25,6 +25,7 @@ public class YouDaoTranslator extends Translator {
 		static {
 			sConfigMap = new HashMap<String, Integer>();
 			
+			sConfigMap.put("abbr.", WordCategory.ABBREVIATION);
 			sConfigMap.put("adj.", WordCategory.ADJECTIVE);
 			sConfigMap.put("adv.", WordCategory.ADVERB);
 			sConfigMap.put("art.", WordCategory.ARTICLE);

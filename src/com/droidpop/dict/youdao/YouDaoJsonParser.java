@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import com.droidpop.dict.EntryParseException;
 import com.droidpop.dict.EntryParser;
 import com.droidpop.dict.WordCategory;
+import com.droidpop.dict.WordCategoryNotFoundException;
 import com.droidpop.dict.WordEntry;
 import com.droidpop.dict.WordEntry.Paraphrase;
 import com.droidpop.dict.youdao.YouDaoJsonResponse.Web;
@@ -43,14 +44,25 @@ public class YouDaoJsonParser implements EntryParser {
 
 				WordEntry entry = new WordEntry();
 				
+				// get status
 				entry.setStatus(getStatus(response.getErrorCode()));
 				if (!entry.isValid()) {
 					return null;
 				}
+				
+				// get word
 				entry.setWord(response.getQuery());
-				entry.setPhoneticSymbol(response.getBasic().getPhonetic());
+				
+				// set phonetic
+				String phonetic = response.getBasic().getPhonetic();
+				if (phonetic != null) {
+					entry.setPhoneticSymbol(phonetic);
+				}
+				
+				// set paraphrases
 				entry.setParaphrases(getParaphrases(
 						response.getBasic().getExplains(),
+						response.getTranslation(),
 						response.getWeb()));
 
 				return entry;
@@ -81,25 +93,39 @@ public class YouDaoJsonParser implements EntryParser {
 		}
 	}
 	
-	private ArrayList<Paraphrase> getParaphrases(String[] explains, Web[] webEntries) {
+	private ArrayList<Paraphrase> getParaphrases(String[] explains, String[] translations, Web[] webEntries) {
 		ArrayList<Paraphrase> paraphrases = new ArrayList<Paraphrase>();
 		
-		for(String explain : explains) {
-			String abbr = YouDaoTranslator.CategoryConfig.abbrGategoryOf(explain);
-			paraphrases.add(new Paraphrase(sCategory.getCategory(abbr), explain));
+		if(explains != null) {
+			for(String explain : explains) {
+				String abbr = YouDaoTranslator.CategoryConfig.abbrGategoryOf(explain);
+				try {
+					paraphrases.add(new Paraphrase(sCategory.getCategory(abbr), explain));
+				} catch (WordCategoryNotFoundException e) {
+					break;
+				}
+			}
 		}
 		
-		for(Web entry : webEntries) {
-			StringBuilder sb = new StringBuilder();
-			sb.append(entry.getKey());
-			sb.append(' ');
-			for(String value : entry.getValue()) {
-				sb.append(value);
-				sb.append("；"); // TODO: using string.xml
+		if(translations != null) {
+			for(String translation :translations) {
+				paraphrases.add(new Paraphrase(WordCategory.OTHERS_TRANSLATION, translation));
 			}
-			Paraphrase paraphrase = new Paraphrase(
-					WordCategory.OTHERS_WEB_ENTRY, sb.toString());
-			paraphrases.add(paraphrase);
+		}
+		
+		if(explains != null) {
+			for(Web entry : webEntries) {
+				StringBuilder sb = new StringBuilder();
+				sb.append(entry.getKey());
+				sb.append(' ');
+				for(String value : entry.getValue()) {
+					sb.append(value);
+					sb.append("；"); // TODO: using string.xml
+				}
+				Paraphrase paraphrase = new Paraphrase(
+						WordCategory.OTHERS_WEB_ENTRY, sb.toString());
+				paraphrases.add(paraphrase);
+			}
 		}
 		
 		return paraphrases;

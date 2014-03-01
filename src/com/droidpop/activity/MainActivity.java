@@ -1,11 +1,17 @@
 package com.droidpop.activity;
 
+import java.util.ArrayList;
+
 import android.app.Activity;
+import android.graphics.Bitmap;
+import android.graphics.Rect;
 import android.os.Bundle;
 import android.view.Menu;
 
 import com.droidpop.R;
 import com.droidpop.app.DroidPop;
+import com.droidpop.app.ScreenCapManager;
+import com.droidpop.app.ScreenCapManager.ScreenCapTaskDispatcher;
 import com.droidpop.test.OnLongPressTranslationListenerTestCase;
 import com.droidpop.test.TestCase;
 
@@ -18,27 +24,27 @@ public class MainActivity extends Activity {
 		
 		DroidPop.initFromLauncherActivity(this);
 		
-//		DroidPop app = DroidPop.getApplication();
+		DroidPop app = DroidPop.getApplication();
 		
-//		ScreenCapManager test1 = (ScreenCapManager) app
-//				.getAppService(DroidPop.SCREEN_CAPTURE_SERVICE);
-//		test1.dispatch(new ScreenCapTaskDispatcher() {
-//			
-//			@Override
-//			public void onDone(ArrayList<Bitmap> resluts) {
-//				DroidPop.debug("pass");
-//			}
-//			
-//			@Override
-//			public void onCancelled(String msg) {
-//				
-//			}
-//			
-//			@Override
-//			public Rect[] setBounds() {
-//				return null;
-//			}
-//		});
+		ScreenCapManager test1 = (ScreenCapManager) app
+				.getAppService(DroidPop.SCREEN_CAPTURE_SERVICE);
+		test1.dispatch(new ScreenCapTaskDispatcher() {
+			
+			@Override
+			public void onDone(ArrayList<Bitmap> resluts) {
+				DroidPop.debug("pass");
+			}
+			
+			@Override
+			public void onCancelled(String msg) {
+				
+			}
+			
+			@Override
+			public Rect[] setBounds() {
+				return null;
+			}
+		});
 				
 //		WordCapLockView test2 = new WordCapLockView(getApplicationContext());
 //		test2.attachedToWindow();
