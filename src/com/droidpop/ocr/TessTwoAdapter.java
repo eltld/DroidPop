@@ -85,7 +85,7 @@ public class TessTwoAdapter extends OcrAdapter {
 		File ocrDir = getOcrDir();
 		
 		File tessdataDir = new File(ocrDir, TESS_DATA);
-		if (!(tessdataDir.mkdir() || tessdataDir.isDirectory())) {
+		if (!(tessdataDir.mkdirs() || tessdataDir.isDirectory())) {
 			throw new FileNotFoundException(tessdataDir.getAbsolutePath());
 		}
 
@@ -113,7 +113,7 @@ public class TessTwoAdapter extends OcrAdapter {
 		if(ls.length == 1){
 			// find the only one
 			Assert.assertEquals(1, ls.length);
-			langFile = new File(ls[0]);
+			langFile = new File(tessdataDir, ls[0]);
 		}
 		
 		if (langFile == null || !langFile.exists()) {

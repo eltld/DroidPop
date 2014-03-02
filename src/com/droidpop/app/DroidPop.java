@@ -1,5 +1,8 @@
 package com.droidpop.app;
 
+import java.io.File;
+import java.io.FilenameFilter;
+
 import junit.framework.Assert;
 import me.wtao.utils.Logcat;
 import android.content.Context;
@@ -21,7 +24,8 @@ public class DroidPop {
 	private volatile static DroidPop sDroidPop = null;
 	private final static Logcat sLogcat = new Logcat();
 	static {
-		sLogcat.setOn();	// debug mode
+		sLogcat.setOn();	// if turned off, check the lang package at tess2/
+		sLogcat.calibrateIndexOfCaller(4);
 	}
 	
 	private Context mContext;
@@ -34,6 +38,7 @@ public class DroidPop {
 			synchronized (DroidPop.class) {
 				if(sDroidPop == null) {
 					sDroidPop = new DroidPop(context);
+					checkLibSupported(context);
 				}
 			}
 		}
@@ -47,11 +52,6 @@ public class DroidPop {
 	
 	public static Context getApplicationContext() {
 		return getApplication().getContext();
-	}
-	
-	static {
-		sLogcat.setOn();
-		sLogcat.calibrateIndexOfCaller(4);
 	}
 	
 	public static boolean isDebuggable() {
@@ -177,6 +177,38 @@ public class DroidPop {
 		mScreenCoordsManager = new ScreenCoordsManager(mContext);
 		mScreenCapManager = new ScreenCapManager(mContext);
 		mClipTranslationManager = ClipTranslationManager.getManager(mContext);
+	}
+	
+	private static void checkLibSupported(Context context) {
+		final String abi = Environment.checkAbi();
+		
+		// if supported, *.so will copy to here
+		String[] ls = null;
+		File libDir = new File(context.getApplicationInfo().nativeLibraryDir);
+		if(libDir.isDirectory()) {
+			ls = libDir.list(new FilenameFilter() {
+				private static final String LIB_SUFFIX = ".so";
+				
+				@Override
+				public boolean accept(File dir, String filename) {
+					return filename.endsWith(LIB_SUFFIX);
+				}
+			});
+		}
+		
+		// list should not be null or only contain libenv.so
+		boolean supported = (ls != null && ls.length > 1);
+		
+		if(!supported) {
+			DroidPop.log(DroidPop.LEVEL_WARN,
+					"device's processor arch not supported, which is ",
+					abi);
+			DroidPop.debug(
+					"if you're a developer, you may find the right arch-abi at abi/; ",
+					"default is armeabi-v7a ",
+					"to compressing the .apk size from 10+ MB to fewer size f.e. 2M, ",
+					"and fast debug");
+		}
 	}
 	
 }

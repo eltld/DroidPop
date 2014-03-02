@@ -16,7 +16,6 @@ LOCAL_PATH := $(call my-dir)
 
 include $(CLEAR_VARS)
 
-LOCAL_CFLAGS := -g
 LOCAL_MODULE := coords
 LOCAL_SRC_FILES := \
 	native_utils.c \
@@ -25,5 +24,13 @@ LOCAL_SRC_FILES := \
 	native_parseevent.c \
 	NativeEventParserDaemon.c
 LOCAL_LDLIBS := -llog
+
+include $(BUILD_SHARED_LIBRARY)
+
+include $(CLEAR_VARS)
+
+LOCAL_MODULE := env
+LOCAL_SRC_FILES := \
+	native_checkenv.c
 
 include $(BUILD_SHARED_LIBRARY)
