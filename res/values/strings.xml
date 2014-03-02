@@ -4,6 +4,16 @@
     <string name="app_name">DroidPop</string>
     <string name="title_activity_main">MainActivity</string>
     <string name="action_settings">Settings</string>
-    <string name="hello_world">{"translation":["你好"],"basic":{"phonetic":"hə'ləʊ; he-","explains":["n. 表示问候， 惊奇或唤起注意时的用语","int. 喂；哈罗","n. (Hello)人名；(法)埃洛"]},"query":"hello","errorCode":0,"web":[{"value":["你好","您好","哈啰"],"key":"Hello"},{"value":["凯蒂猫","昵称","凯帝猫"],"key":"Hello Kitty"},{"value":["你好"],"key":"Hello Fred"}]}</string>
+    
+    <string name="text">
+        love is more than a word\n
+        it says so much\n
+        when i see these four letter\n
+        i almost feel your touch\n
+        this is only happened since\n
+        i fell in love with you\n
+        why this word does this\n
+        i haven\'t got a clue\n
+	</string>
 
 </resources>

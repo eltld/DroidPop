@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <lint>
-    <issue id="SuspiciousImport">
+    <issue id="SuspiciousImport" severity="ignore">
         <ignore path="src/com/droidpop/test/OnLongPressTranslationListenerTestCase.java" />
     </issue>
 </lint>
