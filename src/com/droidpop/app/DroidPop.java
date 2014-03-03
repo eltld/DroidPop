@@ -2,11 +2,13 @@ package com.droidpop.app;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.security.InvalidParameterException;
 
 import junit.framework.Assert;
+import me.wtao.app.LauncherShortcut;
 import me.wtao.utils.Logcat;
+import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
 
 import com.droidpop.R;
 
@@ -28,7 +30,8 @@ public class DroidPop {
 		sLogcat.calibrateIndexOfCaller(4);
 	}
 	
-	private Context mContext;
+	private final Context mContext;
+	private final Activity mActivity;
 	private final ScreenCoordsManager mScreenCoordsManager;
 	private final ScreenCapManager mScreenCapManager;
 	private final ClipTranslationManager mClipTranslationManager;
@@ -86,26 +89,13 @@ public class DroidPop {
 		return mContext;
 	}
 	
-	public void createShortcutFor(Context context, String name, String icon) {
-		Intent launchIntent = new Intent();
-		launchIntent.setClassName(mContext.getPackageName(), context.getClass().getName());
-		launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-		launchIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-		
-		Intent shortcutIntent = new Intent();
-		
-		shortcutIntent.putExtra(Intent.EXTRA_SHORTCUT_INTENT, launchIntent);
-		shortcutIntent.putExtra(Intent.EXTRA_SHORTCUT_NAME, name);
-		shortcutIntent.putExtra(Intent.EXTRA_SHORTCUT_ICON, icon);
-		
-		shortcutIntent.setAction("com.android.launcher.action.INSTALL_SHORTCUT");
-		mContext.sendBroadcast(shortcutIntent);
-	}
-	
-	public void createShortcutFor(Context context) {
-		String appName = mContext.getResources().getString(R.string.app_name);
-		String icon = null; // TODO
-		createShortcutFor(context, appName, icon);
+	public void createShortcut(boolean force) {
+		if(force || !PreferenceSettingsManager.hasCreatedShotcut()) {
+			final String appName = mContext.getResources().getString(R.string.app_name);
+			final int iconId = R.drawable.ic_launcher;
+			LauncherShortcut.createShortcutFor(mActivity, appName, iconId);
+			PreferenceSettingsManager.set(PreferenceSettingsManager.SHOTCUT, true);
+		}
 	}
 	
 	public ServiceManager getAppService(int serviceId) {
@@ -148,6 +138,13 @@ public class DroidPop {
 	
 	private DroidPop(Context context) {
 		mContext = context.getApplicationContext();
+		if(context instanceof Activity) {
+			mActivity = (Activity) context;
+		} else {
+			final String appName = mContext.getResources().getString(R.string.app_name);
+			sLogcat.w(appName, " is not initialized from LauncherActivity!");
+			throw new InvalidParameterException("should initialized from LauncherActivity");
+		}
 		
 //		RootManager manager = new RootManager();
 //		final String cmd = "chmod 777 " + mContext.getPackageCodePath();

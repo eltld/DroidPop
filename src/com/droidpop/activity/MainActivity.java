@@ -15,6 +15,7 @@ public class MainActivity extends Activity {
 		super.onCreate(savedInstanceState);
 
 		DroidPop.initFromLauncherActivity(this);
+		DroidPop.getApplication().createShortcut(false);
 		
 		setContentView(R.layout.activity_main);
 		
