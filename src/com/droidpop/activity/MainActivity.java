@@ -6,10 +6,10 @@ import android.view.Menu;
 
 import com.droidpop.R;
 import com.droidpop.app.DroidPop;
-import com.droidpop.view.SystemOverlayView;
+import com.droidpop.app.ScreenCoordsManager;
 
 public class MainActivity extends Activity {
-
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -23,16 +23,16 @@ public class MainActivity extends Activity {
 //		TestCase test1 = new OcrTestCase(this, imageView);
 //		test1.setUp();
 
-//		 WordCapLockView test2 = new WordCapLockView(getApplicationContext());
-//		 test2.attachedToWindow();
-//		 test2.setEnable();
+//		WordCapLockView test2 = new WordCapLockView(getApplicationContext());
+//		test2.attachedToWindow();
+//		test2.setEnable();
 
-//		 TestCase test3 = new OnLongPressTranslationListenerTestCase(this);
-//		 test3.setUp();
+//		TestCase test3 = new OnLongPressTranslationListenerTestCase(this);
+//		test3.setUp();
 		
-		SystemOverlayView v = new SystemOverlayView(this);
-		v.attachedToWindow();
-		v.show();
+		ScreenCoordsManager mgr = (ScreenCoordsManager) DroidPop
+				.getApplication().getAppService(DroidPop.SCREEN_COORDS_SERVICE);
+		mgr.enableShowTouches();
 	}
 
 	@Override

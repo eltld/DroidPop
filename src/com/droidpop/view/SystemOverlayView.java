@@ -2,6 +2,7 @@ package com.droidpop.view;
 
 import me.wtao.utils.ScreenMetrics;
 import me.wtao.view.FloatingView;
+import me.wtao.view.PointerFactory;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Point;
@@ -25,7 +26,9 @@ public class SystemOverlayView extends FloatingView implements
 	
 	private final ViewGroup mContentView;
 	private final ImageView[] mTouchPointers;
+	private Boolean mTouchable;
 	private boolean mShowTouches;
+	private boolean mShowTouchesChecked;
 
 	public SystemOverlayView(Context context) {
 		super(context);
@@ -36,9 +39,10 @@ public class SystemOverlayView extends FloatingView implements
 				RelativeLayout.LayoutParams.MATCH_PARENT);
 		addView(mContentView, flp);
 		
+		PointerFactory factory = new PointerFactory(context);
 		mTouchPointers = new ImageView[MAX_MULTI_TOUCH_POINT_SUPPORTED];
 		for (int i = 0; i != MAX_MULTI_TOUCH_POINT_SUPPORTED; ++i) {
-			PointerIcon icon = PointerIcon.getDefaultIcon(context);
+			PointerIcon icon = factory.createDefaultPointer();
 			Bitmap bitmap = icon.getBitmap();
 			Point hotspotPoint = new Point(
 					(int)(icon.getHotSpotX() + 0.5f),
@@ -48,28 +52,40 @@ public class SystemOverlayView extends FloatingView implements
 			addTouchPointer(mTouchPointers[i], hotspotPoint);
 		}
 
-		if (isDevOptionShowTouchesChecked()) {
+		mTouchable = false;
+		
+		if (!isDevOptionShowTouchesChecked()) {
 			showTouchPointer(true);
 		}
 	}
 
 	public void showTouchPointer(boolean customed) {
-		if (customed) {
+		if (!customed) {
+			// TODO: check developer options 'show touches' setting
+
+			mShowTouchesChecked = false;
+			if (mShowTouchesChecked) {
+				DroidPop.debug("show system touches");
+				mShowTouches = false; 
+			}
+		}
+		
+		// if failed, show custom touches
+		if (customed || !mShowTouchesChecked) {
+			DroidPop.debug("show custom touches");
+			
 			DroidPop app = DroidPop.getApplication();
 			ScreenCoordsManager mgr = (ScreenCoordsManager) app
 					.getAppService(DroidPop.SCREEN_COORDS_SERVICE);
 			mgr.addOnScreenTouchListener(this);
 
 			mShowTouches = true;
-		} else {
-			// TODO: check developer options 'show touches' setting
-			
-			mShowTouches = false; // show system default touches
 		}
 	}
 
 	public void hideTouchPointer() {
 		mShowTouches = false;
+		// TODO: remove from ScreenCoordsManager
 	}
 
 	@Override
@@ -102,16 +118,41 @@ public class SystemOverlayView extends FloatingView implements
 
 	@Override
 	public void onScreenTouch(MotionEvent event) {
-		handleTouchEvent(event, false);
+		synchronized (mTouchable) {
+			if (mTouchable) {
+				DroidPop.debug("has been touched, not handle again.");
+				return;
+			}
+		}
+		
+		handleTouchEvent(event);
 	}
 
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
-		return handleTouchEvent(event, true);
+		synchronized(mTouchable) {
+			switch (event.getAction() & MotionEvent.ACTION_MASK) {
+			case MotionEvent.ACTION_DOWN:
+				DroidPop.debug("has been touched, nomally not.");
+				mTouchable = true;
+				break;
+			case MotionEvent.ACTION_UP:
+				mTouchable = false;
+				break;
+			}
+		}
+		
+		return handleTouchEvent(event);
 	}
 
-	private boolean handleTouchEvent(MotionEvent event, boolean touched) {
-		if(!mShowTouches) {
+	private boolean handleTouchEvent(MotionEvent event) {
+		if(mShowTouchesChecked
+				|| !(mShowTouches || mTouchable)) {
+			final String empty = "";
+			DroidPop.debug("won't handle, cause",
+					(mShowTouchesChecked ? " developer options \'show touches\' checked; " : empty),
+					(!mShowTouches ? " show touches not enabled;" : empty),
+					(!mTouchable ? " not touchable" : empty));
 			return false;
 		}
 		
@@ -128,8 +169,13 @@ public class SystemOverlayView extends FloatingView implements
 	}
 	
 	private void addTouchPointer(View pointer, Point hotspotPoint) {
-		AbsoluteLayout.LayoutParams alp = new AbsoluteLayout.LayoutParams(0, 0,
-				LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+		AbsoluteLayout.LayoutParams alp = new AbsoluteLayout.LayoutParams(
+				LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT, 
+				0, 0);
+
+		pointer.bringToFront();
+		pointer.setVisibility(VISIBLE);
+		
 		mContentView.addView(pointer, alp);
 	}
 	
@@ -153,4 +199,5 @@ public class SystemOverlayView extends FloatingView implements
 
 		mWindowParams.height = ScreenMetrics.getResolutionY();
 	}
+	
 }

@@ -102,6 +102,10 @@ public class ScreenCoordsService extends Service {
 		}
 	}
 	
+	public SystemOverlayView getOverlayView() {
+		return mOverlayView;
+	}
+	
 	public void notifyAllListeners() {
 		sLogcat.v("start...");
 		

@@ -11,6 +11,8 @@ import android.util.SparseArray;
 public final class PreferenceSettingsManager {
 	// TYPE_BOOLEAN below
 	public static final int SHOTCUT;
+	public static final int SHOW_TOUCHES;
+	public static final int SHOW_TOUCHES_CUSTOMIZED;
 	
 	private static final int TYPE_MASK = 0xf0000000;
 	private static final int TYPE_BOOLEAN = 0x10000000;
@@ -30,9 +32,17 @@ public final class PreferenceSettingsManager {
 		// init TYPE_BOOLEAN
 		autoincr = 1;
 		SHOTCUT = TYPE_BOOLEAN | (autoincr++);
+		SHOW_TOUCHES = TYPE_BOOLEAN | (autoincr++);
+		SHOW_TOUCHES_CUSTOMIZED = TYPE_BOOLEAN | (autoincr++);
 		
 		sKeyMap.put(SHOTCUT, "shotcut");
 		sDefaultMap.put(SHOTCUT, false);
+		
+		sKeyMap.put(SHOW_TOUCHES, "show_touches");
+		sDefaultMap.put(SHOW_TOUCHES, true);
+		
+		sKeyMap.put(SHOW_TOUCHES_CUSTOMIZED, "show_touches");
+		sDefaultMap.put(SHOW_TOUCHES_CUSTOMIZED, true);
 		// end init TYPE_BOOLEAN
 	}
 	
@@ -47,6 +57,14 @@ public final class PreferenceSettingsManager {
 	
 	public static boolean hasCreatedShotcut() {
 		return (Boolean) get(SHOTCUT);
+	}
+	
+	public static boolean isShowTouches() {
+		return (Boolean) get(SHOW_TOUCHES);
+	}
+	
+	public static boolean isShowTouchesCustomized() {
+		return (Boolean) get(SHOW_TOUCHES_CUSTOMIZED);
 	}
 	
 	public static SharedPreferences getSharedPreferences() {

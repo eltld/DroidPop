@@ -11,13 +11,15 @@ import android.os.IBinder;
 import com.droidpop.service.LocalBinder;
 import com.droidpop.service.ScreenCoordsService;
 import com.droidpop.view.OnScreenTouchListener;
+import com.droidpop.view.SystemOverlayView;
 
 public class ScreenCoordsManager implements ServiceManager {
 	private Context mContext;
 	private ScreenCoordsService mService;
 	private boolean mIsBound;
 	private ServiceConnection mConn;
-	private ArrayList<OnScreenTouchListener> mListeners;
+	private ArrayList<OnScreenTouchListener> mListeners; // TODO: buffer need improve
+	private Integer mShowTouchesSemaphore; // TODO: simplified and need refactor
 	
 	protected ScreenCoordsManager(Context context) {
 		mContext = context;
@@ -25,6 +27,7 @@ public class ScreenCoordsManager implements ServiceManager {
 		mIsBound = false;
 		mConn = new ScreenCoordsServiceConn();
 		mListeners = new ArrayList<OnScreenTouchListener>();
+		mShowTouchesSemaphore = 0;
 	}
 	
 	public void addOnScreenTouchListener(OnScreenTouchListener listener) {
@@ -32,6 +35,31 @@ public class ScreenCoordsManager implements ServiceManager {
 			mService.addOnScreenTouchListener(listener);
 		} else {
 			mListeners.add(listener);
+		}
+	}
+	
+	public void enableShowTouches() {
+		if (mService != null && mShowTouchesSemaphore > 0) {
+			SystemOverlayView overlay = mService.getOverlayView();
+			if (PreferenceSettingsManager.isShowTouches()) {
+				overlay.showTouchPointer(PreferenceSettingsManager
+						.isShowTouchesCustomized());
+			}
+		} else {
+			synchronized (mShowTouchesSemaphore) {
+				mShowTouchesSemaphore++;
+			}
+		}
+	}
+	
+	public void disableShowTouches() {
+		if (mService != null && mShowTouchesSemaphore < 0) {
+			SystemOverlayView overlay = mService.getOverlayView();
+			overlay.hideTouchPointer();
+		} else {
+			synchronized (mShowTouchesSemaphore) {
+				mShowTouchesSemaphore--;
+			}
 		}
 	}
 	
@@ -75,6 +103,15 @@ public class ScreenCoordsManager implements ServiceManager {
 					mService.addOnScreenTouchListener(listener);
 				}
 				mListeners.clear();
+			}
+			
+			synchronized (mShowTouchesSemaphore) {
+				if(mShowTouchesSemaphore > 0) {
+					enableShowTouches();
+				} else if(mShowTouchesSemaphore < 0) {
+					disableShowTouches();
+				}
+				mShowTouchesSemaphore = 0;
 			}
 		}
 

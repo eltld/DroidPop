@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.Locale;
 
 import me.wtao.utils.ScreenMetrics;
-import android.R;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -32,7 +31,7 @@ public class OcrTestCase implements TestCase, OnClickListener, OnTouchListener {
 	private ImageView mImageView;
 
 	public OcrTestCase(Activity activity, ImageView imageView) {
-		this((Context)activity, activity.findViewById(R.id.content), imageView);
+		this((Context)activity, activity.findViewById(android.R.id.content), imageView);
 	}
 	
 	public OcrTestCase(Context context, View v, ImageView imageView) {

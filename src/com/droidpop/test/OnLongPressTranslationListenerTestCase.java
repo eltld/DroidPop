@@ -1,6 +1,5 @@
 package com.droidpop.test;
 
-import android.R;
 import android.app.Activity;
 import android.content.Context;
 import android.view.GestureDetector;
@@ -54,7 +53,7 @@ public class OnLongPressTranslationListenerTestCase implements TestCase, OnTouch
 	};
 	
 	public OnLongPressTranslationListenerTestCase(Activity activity) {
-		this((Context)activity, activity.findViewById(R.id.content));
+		this((Context)activity, activity.findViewById(android.R.id.content));
 	}
 	
 	public OnLongPressTranslationListenerTestCase(Context context, View v) {
