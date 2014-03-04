@@ -2,6 +2,7 @@ package com.droidpop.service;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 
+import junit.framework.Assert;
 import me.wtao.utils.Logcat;
 import me.wtao.utils.ScreenMetrics;
 import me.wtao.utils.TouchDeviceParser;
@@ -34,7 +35,7 @@ public class ScreenCoordsService extends Service {
 	static {
 		sLogcat.setOn();	// debug mode enable
 	}
-
+	
 	private WeakReference<NativeEventParserDaemon> mDaemonRef;
 	private ArrayList<WeakReference<OnScreenTouchListener>> mOnScreenTouchListeners;
 	private SystemOverlayView mOverlayView;
@@ -56,6 +57,12 @@ public class ScreenCoordsService extends Service {
 		mOnScreenTouchListeners = new ArrayList<WeakReference<OnScreenTouchListener>>();
 		
 		mOverlayView = new SystemOverlayView(this);
+		
+		Assert.assertTrue(mOverlayView.getClass().getCanonicalName()
+				+ " should implements "
+				+ OnScreenTouchListener.class.getSimpleName(),
+				mOverlayView instanceof OnScreenTouchListener);
+		
 		mOverlayView.attachedToWindow();
 		mOverlayView.show();
 		
@@ -93,6 +100,7 @@ public class ScreenCoordsService extends Service {
 		return mLocalBinder;
 	}
 	
+	// native
 	public void addOnScreenTouchListener(OnScreenTouchListener listener) {
 		if (listener instanceof OnScreenTouchListener) {
 			synchronized (mOnScreenTouchListeners) {
@@ -102,14 +110,23 @@ public class ScreenCoordsService extends Service {
 		}
 	}
 	
-	public SystemOverlayView getOverlayView() {
-		return mOverlayView;
+	// native
+	public void requestShowTouches(boolean customed) {
+		mOverlayView.showTouchPointer(customed);
+	}
+	
+	// native
+	public void requestHideTouches() {
+		mOverlayView.hideTouchPointer();
 	}
 	
 	public void notifyAllListeners() {
 		sLogcat.v("start...");
 		
 		MotionEvent event = packetEvent();
+		if(mOverlayView.isShowTouches()) {
+			mOverlayView.onScreenTouch(event);
+		}
 		
 		sLogcat.d(Thread.currentThread());
 		synchronized (mOnScreenTouchListeners) {
@@ -239,10 +256,19 @@ public class ScreenCoordsService extends Service {
 				coord.x = height - tmp;
 				break;
 			}
+			
 		}
 		
 		return coords;
 	}
+	
+//	private int calibrateOrientation(int orientation) {
+//		if (mDaemonRef.get() != null) {
+//			return orientation - mDaemonRef.get().getInitOrientation();
+//		} else {
+//			return orientation;
+//		}
+//	}
 
 	private int getMetaState() {
 		// just ignored, not support key event so far
@@ -326,8 +352,11 @@ public class ScreenCoordsService extends Service {
 		private static final long TIME_OUT_MILLIS = 10000; // 5-10s ANR
 		
 		private static NativeEventParserDaemon sDaemon = null;
-		private WeakReference<ScreenCoordsService> mServiceRef;
 		private volatile Boolean mAvaiable = false;
+
+		private WeakReference<ScreenCoordsService> mServiceRef;
+//		private boolean mIsLandscape;
+//		private int mOrientation;
 		
 		public static WeakReference<NativeEventParserDaemon> getDaemonRef(ScreenCoordsService service) {
 			if(sDaemon == null) {
@@ -341,10 +370,38 @@ public class ScreenCoordsService extends Service {
 			return new WeakReference<NativeEventParserDaemon>(sDaemon);
 		}
 		
+//		/**
+//		 * 
+//		 * @return true if when daemon starts it's landscape.
+//		 */
+//		public boolean isLandscape() {
+//			return mIsLandscape;
+//		}
+//		
+//		public int getInitOrientation() {
+//			return mOrientation;
+//		}
+		
 		@Override
 		public synchronized void start() {
 			sLogcat.d("start daemon...");
-						
+			
+//			int resolution[] = { (int) (sDevice.getDisplayWidth() + 0.5f),
+//					(int) (sDevice.getDisplayHeight() + 0.5f) };
+//			mIsLandscape = (resolution[AXIS_X] > resolution[AXIS_Y]);
+//			if(mIsLandscape) {
+//				// make resolution[AXIS_X] always larger
+//				int px = resolution[AXIS_X];
+//				resolution[AXIS_X] = resolution[AXIS_Y];
+//				resolution[AXIS_Y] = px;
+//			}
+//			
+//			ScreenCoordsService service = mServiceRef.get();
+//			if(service != null) {
+//				ScreenMetrics metrics = new ScreenMetrics(service);
+//				mOrientation = metrics.getOrientation();
+//			}
+			
 			int resolution[] = { ScreenMetrics.getResolutionX(),
 					ScreenMetrics.getResolutionY() };
 			init(resolution);

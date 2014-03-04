@@ -11,7 +11,6 @@ import android.os.IBinder;
 import com.droidpop.service.LocalBinder;
 import com.droidpop.service.ScreenCoordsService;
 import com.droidpop.view.OnScreenTouchListener;
-import com.droidpop.view.SystemOverlayView;
 
 public class ScreenCoordsManager implements ServiceManager {
 	private Context mContext;
@@ -39,26 +38,40 @@ public class ScreenCoordsManager implements ServiceManager {
 	}
 	
 	public void enableShowTouches() {
-		if (mService != null && mShowTouchesSemaphore > 0) {
-			SystemOverlayView overlay = mService.getOverlayView();
-			if (PreferenceSettingsManager.isShowTouches()) {
-				overlay.showTouchPointer(PreferenceSettingsManager
+		if (PreferenceSettingsManager.isShowTouches()) {
+			return;
+		}
+		
+		synchronized (mShowTouchesSemaphore) {
+			++mShowTouchesSemaphore;
+			if (mService != null && mShowTouchesSemaphore > 0) {
+				// enable
+				mService.requestShowTouches(PreferenceSettingsManager
 						.isShowTouchesCustomized());
-			}
-		} else {
-			synchronized (mShowTouchesSemaphore) {
-				mShowTouchesSemaphore++;
+				// reset
+				mShowTouchesSemaphore = 0;
+				// setting
+				PreferenceSettingsManager.set(
+						PreferenceSettingsManager.SHOW_TOUCHES, true);
 			}
 		}
 	}
 	
 	public void disableShowTouches() {
-		if (mService != null && mShowTouchesSemaphore < 0) {
-			SystemOverlayView overlay = mService.getOverlayView();
-			overlay.hideTouchPointer();
-		} else {
-			synchronized (mShowTouchesSemaphore) {
-				mShowTouchesSemaphore--;
+		if (!PreferenceSettingsManager.isShowTouches()) {
+			return;
+		}
+		
+		synchronized (mShowTouchesSemaphore) {
+			--mShowTouchesSemaphore;
+			if (mService != null && mShowTouchesSemaphore < 0) {
+				// disable
+				mService.requestHideTouches();
+				// reset
+				mShowTouchesSemaphore = 0;
+				// setting
+				PreferenceSettingsManager.set(
+						PreferenceSettingsManager.SHOW_TOUCHES, false);
 			}
 		}
 	}
@@ -111,7 +124,6 @@ public class ScreenCoordsManager implements ServiceManager {
 				} else if(mShowTouchesSemaphore < 0) {
 					disableShowTouches();
 				}
-				mShowTouchesSemaphore = 0;
 			}
 		}
 

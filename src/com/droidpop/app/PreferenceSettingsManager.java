@@ -39,7 +39,7 @@ public final class PreferenceSettingsManager {
 		sDefaultMap.put(SHOTCUT, false);
 		
 		sKeyMap.put(SHOW_TOUCHES, "show_touches");
-		sDefaultMap.put(SHOW_TOUCHES, true);
+		sDefaultMap.put(SHOW_TOUCHES, false);
 		
 		sKeyMap.put(SHOW_TOUCHES_CUSTOMIZED, "show_touches");
 		sDefaultMap.put(SHOW_TOUCHES_CUSTOMIZED, true);

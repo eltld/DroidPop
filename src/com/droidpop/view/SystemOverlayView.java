@@ -1,5 +1,6 @@
 package com.droidpop.view;
 
+import me.wtao.os.UiThreadHandler;
 import me.wtao.utils.ScreenMetrics;
 import me.wtao.view.FloatingView;
 import me.wtao.view.PointerFactory;
@@ -8,6 +9,7 @@ import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.view.MotionEvent;
 import android.view.MotionEvent.PointerCoords;
+import android.view.MotionEvent.PointerProperties;
 import android.view.PointerIcon;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,13 +18,17 @@ import android.widget.AbsoluteLayout;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
+import com.droidpop.R;
 import com.droidpop.app.DroidPop;
 import com.droidpop.app.ScreenCoordsManager;
 
 public class SystemOverlayView extends FloatingView implements
 		OnScreenTouchListener {
 
-	private static final int MAX_MULTI_TOUCH_POINT_SUPPORTED = 10;
+	/**
+	 * only support one double-click translate
+	 */
+	private static final int MAX_MULTI_TOUCH_POINT_SUPPORTED = 1;
 	
 	private final ViewGroup mContentView;
 	private final ImageView[] mTouchPointers;
@@ -38,6 +44,9 @@ public class SystemOverlayView extends FloatingView implements
 				RelativeLayout.LayoutParams.MATCH_PARENT,
 				RelativeLayout.LayoutParams.MATCH_PARENT);
 		addView(mContentView, flp);
+		
+		setBackgroundResource(R.color.transparent_blue_light); // TODO: test
+		mContentView.setBackgroundResource(R.color.transparent_blue_light);
 		
 		PointerFactory factory = new PointerFactory(context);
 		mTouchPointers = new ImageView[MAX_MULTI_TOUCH_POINT_SUPPORTED];
@@ -58,6 +67,10 @@ public class SystemOverlayView extends FloatingView implements
 			showTouchPointer(true);
 		}
 	}
+	
+	public boolean isShowTouches() {
+		return (!mShowTouchesChecked && (mShowTouches || mTouchable));
+	}
 
 	public void showTouchPointer(boolean customed) {
 		if (!customed) {
@@ -73,49 +86,14 @@ public class SystemOverlayView extends FloatingView implements
 		// if failed, show custom touches
 		if (customed || !mShowTouchesChecked) {
 			DroidPop.debug("show custom touches");
-			
-			DroidPop app = DroidPop.getApplication();
-			ScreenCoordsManager mgr = (ScreenCoordsManager) app
-					.getAppService(DroidPop.SCREEN_COORDS_SERVICE);
-			mgr.addOnScreenTouchListener(this);
-
 			mShowTouches = true;
 		}
 	}
 
 	public void hideTouchPointer() {
 		mShowTouches = false;
-		// TODO: remove from ScreenCoordsManager
 	}
-
-	@Override
-	protected void onLayout(boolean changed, int l, int t, int r, int b) {
-		requestMessure();
-		if (hasAttachedToWindow()) {
-			sWindowManager.updateViewLayout(this, mWindowParams);
-		}
-
-		super.onLayout(changed, l, t, r, ScreenMetrics.getResolutionY());
-	}
-
-	@Override
-	protected void onInitializeWindowLayoutParams() {
-		super.onInitializeWindowLayoutParams();
-
-		mWindowParams.type = WindowManager.LayoutParams.TYPE_SYSTEM_ERROR;
-		mWindowParams.flags |= WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
-				| WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
-				| WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
-				| WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN;
-		mWindowParams.flags &= ~WindowManager.LayoutParams.FLAG_LAYOUT_INSET_DECOR;
-
-		mWindowParams.x = 0;
-		mWindowParams.y = 0;
-		mWindowParams.width = WindowManager.LayoutParams.MATCH_PARENT;
-
-		requestMessure();
-	}
-
+	
 	@Override
 	public void onScreenTouch(MotionEvent event) {
 		synchronized (mTouchable) {
@@ -144,10 +122,37 @@ public class SystemOverlayView extends FloatingView implements
 		
 		return handleTouchEvent(event);
 	}
+	
+	@Override
+	protected void onLayout(boolean changed, int l, int t, int r, int b) {
+		requestMessure();
+		if (hasAttachedToWindow()) {
+			sWindowManager.updateViewLayout(this, mWindowParams);
+		}
 
-	private boolean handleTouchEvent(MotionEvent event) {
-		if(mShowTouchesChecked
-				|| !(mShowTouches || mTouchable)) {
+		super.onLayout(changed, l, t, r, ScreenMetrics.getResolutionY());
+	}
+
+	@Override
+	protected void onInitializeWindowLayoutParams() {
+		super.onInitializeWindowLayoutParams();
+
+		mWindowParams.type = WindowManager.LayoutParams.TYPE_SYSTEM_ERROR;
+		mWindowParams.flags |= WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+				| WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
+				| WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
+				| WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN;
+		mWindowParams.flags &= ~WindowManager.LayoutParams.FLAG_LAYOUT_INSET_DECOR;
+
+		mWindowParams.x = 0;
+		mWindowParams.y = 0;
+		mWindowParams.width = WindowManager.LayoutParams.MATCH_PARENT;
+
+		requestMessure();
+	}
+
+	private boolean handleTouchEvent(final MotionEvent event) {
+		if(!isShowTouches()) {
 			final String empty = "";
 			DroidPop.debug("won't handle, cause",
 					(mShowTouchesChecked ? " developer options \'show touches\' checked; " : empty),
@@ -156,16 +161,36 @@ public class SystemOverlayView extends FloatingView implements
 			return false;
 		}
 		
-		PointerCoords pointerCoords = new PointerCoords();
-		Point point = new Point();
-		for(int i = 0; i != event.getPointerCount(); ++i) {
-			event.getPointerCoords(i, pointerCoords);
-			point.x = (int) (pointerCoords.x + 0.5f);
-			point.y = (int) (pointerCoords.y + 0.5f);
-			showTouchPointer(i, point);
+		try {
+			UiThreadHandler handler = new UiThreadHandler();
+			handler.runOnUiThread(new Runnable() {
+
+				@Override
+				public void run() {
+					switch (event.getAction() & MotionEvent.ACTION_MASK) {
+					case MotionEvent.ACTION_DOWN:
+						PointerCoords pointerCoords = new PointerCoords();
+						Point point = new Point();
+						final int cnt = Math.min(event.getPointerCount(), MAX_MULTI_TOUCH_POINT_SUPPORTED);
+						for (int i = 0; i != cnt; ++i) {
+							event.getPointerCoords(i, pointerCoords);
+							point.x = (int) (pointerCoords.x + 0.5f);
+							point.y = (int) (pointerCoords.y + 0.5f);
+							showTouchPointer(i, point);
+						}
+						break;
+
+					default:
+						break;
+					}
+				}
+				
+			});
+
+			return true;
+		} catch (Exception e) {
+			return false;
 		}
-		
-		return true;
 	}
 	
 	private void addTouchPointer(View pointer, Point hotspotPoint) {
@@ -173,6 +198,8 @@ public class SystemOverlayView extends FloatingView implements
 				LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT, 
 				0, 0);
 
+		pointer.setX(-hotspotPoint.x);
+		pointer.setY(-hotspotPoint.y);
 		pointer.bringToFront();
 		pointer.setVisibility(VISIBLE);
 		
@@ -180,6 +207,8 @@ public class SystemOverlayView extends FloatingView implements
 	}
 	
 	private void showTouchPointer(int pointerIndex, Point point) {
+		DroidPop.debug("[", pointerIndex, "] ", point);
+		
 		View pointer = mTouchPointers[pointerIndex];
 		AbsoluteLayout.LayoutParams alp = (AbsoluteLayout.LayoutParams) pointer
 				.getLayoutParams();
