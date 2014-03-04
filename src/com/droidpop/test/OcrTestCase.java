@@ -25,7 +25,6 @@ import com.droidpop.ocr.TessTwoAdapter;
 
 public class OcrTestCase implements TestCase, OnClickListener, OnTouchListener {
 	
-	private final int mStatusBarHeight;
 	private OcrAdapter mOcr;
 	private View mTouchView;
 	private ImageView mImageView;
@@ -37,7 +36,6 @@ public class OcrTestCase implements TestCase, OnClickListener, OnTouchListener {
 	public OcrTestCase(Context context, View v, ImageView imageView) {
 		ScreenMetrics metrics = new ScreenMetrics(context);
 		metrics.requestMessure();
-		mStatusBarHeight = ScreenMetrics.getMeasuredStatusBarHeight();
 		
 		mOcr = new TessTwoAdapter(context);
 		mTouchView = v;
@@ -112,7 +110,7 @@ public class OcrTestCase implements TestCase, OnClickListener, OnTouchListener {
 		
 		if (event.getAction() == MotionEvent.ACTION_DOWN) {
 			Point point = new Point((int) (event.getRawX() + 0.5f),
-					(int) (event.getRawY() - mStatusBarHeight + 0.5f));
+					(int) (event.getRawY() + 0.5f));
 			DroidPop.debug(mOcr.getText(point));
 		}
 		

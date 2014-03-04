@@ -14,6 +14,11 @@ public final class PreferenceSettingsManager {
 	public static final int SHOW_TOUCHES;
 	public static final int SHOW_TOUCHES_CUSTOMIZED;
 	
+	// Developer Option below
+	public enum DeveloperOption {
+		SHOW_TOUCHES,
+	}
+	
 	private static final int TYPE_MASK = 0xf0000000;
 	private static final int TYPE_BOOLEAN = 0x10000000;
 	private static final int TYPE_FLOAT = 0x20000000;
@@ -65,6 +70,18 @@ public final class PreferenceSettingsManager {
 	
 	public static boolean isShowTouchesCustomized() {
 		return (Boolean) get(SHOW_TOUCHES_CUSTOMIZED);
+	}
+
+	public static boolean isDeveloperOptionEnabled(DeveloperOption option) {
+		return false;
+	}
+	
+	public static boolean enableDeveloperOption(DeveloperOption option) {
+		return false;
+	}
+	
+	public static boolean disableDeveloperOption(DeveloperOption option) {
+		return true;
 	}
 	
 	public static SharedPreferences getSharedPreferences() {

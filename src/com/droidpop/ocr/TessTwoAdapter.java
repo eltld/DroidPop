@@ -28,7 +28,6 @@ public class TessTwoAdapter extends OcrAdapter {
 	private static final String DEFAULT_LANG_PACKAGE = "tess2/tesseract-ocr.eng.zip";
 	private static final String FILE_FORMAT = ".traineddata";
 	
-	private Context mContext;
 	private String mLanguage;
 
 	private TessBaseAPI baseApi;
@@ -44,7 +43,8 @@ public class TessTwoAdapter extends OcrAdapter {
 	 * @param lang not used but reserved
 	 */
 	public TessTwoAdapter(Context context, String lang) {
-		mContext = context;
+		super(context);
+		
 		mLanguage = DEFAULT_LANG;
 		
 		if (!checkEnvironment()) {
@@ -143,32 +143,21 @@ public class TessTwoAdapter extends OcrAdapter {
 	 */
 	@Override
 	public String getText(Point point, String encode) {
-		ArrayList<Rect> wordsRects = baseApi.getWords().getBoxRects();
-
 		String recognizedText = null;
+		
+		ArrayList<Rect> rects = baseApi.getWords().getBoxRects();
+		Rect target = getTargetRect(point, rects);
+		
+		if (target != null) {
+			baseApi.setRectangle(target);
+			recognizedText = baseApi.getUTF8Text();
+			recognizedText = recognizedText
+					.replaceAll("[^a-zA-Z0-9]+", " ");
 
-		Rect rect = null;
-		int cnt = wordsRects.size();
-		for (int i = 0; i < cnt; i++) {
-			rect = wordsRects.get(i);
-			if (rect.contains(point.x, point.y)) {
-				baseApi.setRectangle(rect);
-				recognizedText = baseApi.getUTF8Text();
-				recognizedText = recognizedText
-						.replaceAll("[^a-zA-Z0-9]+", " ");
-
-				baseApi.setRectangle(mRegionRect);
-
-				return recognizedText;
-			}
+			baseApi.setRectangle(mRegionRect);
 		}
 
-		return null;
-	}
-	
-	@Override
-	protected Context getContext() {
-		return mContext;
+		return recognizedText;
 	}
 
 	private void initRegionRect() {

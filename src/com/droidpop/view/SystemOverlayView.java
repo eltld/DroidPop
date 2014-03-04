@@ -4,12 +4,15 @@ import me.wtao.os.UiThreadHandler;
 import me.wtao.utils.ScreenMetrics;
 import me.wtao.view.FloatingView;
 import me.wtao.view.PointerFactory;
+import android.animation.Animator;
+import android.animation.Animator.AnimatorListener;
+import android.animation.AnimatorInflater;
+import android.animation.AnimatorSet;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.view.MotionEvent;
 import android.view.MotionEvent.PointerCoords;
-import android.view.MotionEvent.PointerProperties;
 import android.view.PointerIcon;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,7 +23,8 @@ import android.widget.RelativeLayout;
 
 import com.droidpop.R;
 import com.droidpop.app.DroidPop;
-import com.droidpop.app.ScreenCoordsManager;
+import com.droidpop.app.PreferenceSettingsManager;
+import com.droidpop.app.PreferenceSettingsManager.DeveloperOption;
 
 public class SystemOverlayView extends FloatingView implements
 		OnScreenTouchListener {
@@ -31,7 +35,7 @@ public class SystemOverlayView extends FloatingView implements
 	private static final int MAX_MULTI_TOUCH_POINT_SUPPORTED = 1;
 	
 	private final ViewGroup mContentView;
-	private final ImageView[] mTouchPointers;
+	private final TouchPointer[] mTouchPointers;
 	private Boolean mTouchable;
 	private boolean mShowTouches;
 	private boolean mShowTouchesChecked;
@@ -45,25 +49,28 @@ public class SystemOverlayView extends FloatingView implements
 				RelativeLayout.LayoutParams.MATCH_PARENT);
 		addView(mContentView, flp);
 		
-		setBackgroundResource(R.color.transparent_blue_light); // TODO: test
-		mContentView.setBackgroundResource(R.color.transparent_blue_light);
+//		// used to test
+//		setBackgroundResource(R.color.transparent_blue_light);
+//		mContentView.setBackgroundResource(R.color.transparent_blue_light);
 		
 		PointerFactory factory = new PointerFactory(context);
-		mTouchPointers = new ImageView[MAX_MULTI_TOUCH_POINT_SUPPORTED];
+		mTouchPointers = new TouchPointer[MAX_MULTI_TOUCH_POINT_SUPPORTED];
 		for (int i = 0; i != MAX_MULTI_TOUCH_POINT_SUPPORTED; ++i) {
 			PointerIcon icon = factory.createDefaultPointer();
 			Bitmap bitmap = icon.getBitmap();
 			Point hotspotPoint = new Point(
 					(int)(icon.getHotSpotX() + 0.5f),
 					(int)(icon.getHotSpotY() + 0.5f));
-			mTouchPointers[i] = new ImageView(context);
+			mTouchPointers[i] = new TouchPointer(context);
 			mTouchPointers[i].setImageBitmap(bitmap);
 			addTouchPointer(mTouchPointers[i], hotspotPoint);
 		}
 
 		mTouchable = false;
 		
-		if (!isDevOptionShowTouchesChecked()) {
+		mShowTouchesChecked = PreferenceSettingsManager
+				.isDeveloperOptionEnabled(DeveloperOption.SHOW_TOUCHES);
+		if (!mShowTouchesChecked) {
 			showTouchPointer(true);
 		}
 	}
@@ -74,9 +81,10 @@ public class SystemOverlayView extends FloatingView implements
 
 	public void showTouchPointer(boolean customed) {
 		if (!customed) {
-			// TODO: check developer options 'show touches' setting
-
-			mShowTouchesChecked = false;
+			// check developer options 'show touches' setting
+			mShowTouchesChecked = PreferenceSettingsManager
+					.enableDeveloperOption(DeveloperOption.SHOW_TOUCHES);
+			
 			if (mShowTouchesChecked) {
 				DroidPop.debug("show system touches");
 				mShowTouches = false; 
@@ -87,6 +95,8 @@ public class SystemOverlayView extends FloatingView implements
 		if (customed || !mShowTouchesChecked) {
 			DroidPop.debug("show custom touches");
 			mShowTouches = true;
+			mShowTouchesChecked = !PreferenceSettingsManager
+					.disableDeveloperOption(DeveloperOption.SHOW_TOUCHES);
 		}
 	}
 
@@ -200,25 +210,20 @@ public class SystemOverlayView extends FloatingView implements
 
 		pointer.setX(-hotspotPoint.x);
 		pointer.setY(-hotspotPoint.y);
+		pointer.setVisibility(INVISIBLE);
 		pointer.bringToFront();
-		pointer.setVisibility(VISIBLE);
 		
 		mContentView.addView(pointer, alp);
 	}
 	
 	private void showTouchPointer(int pointerIndex, Point point) {
-		DroidPop.debug("[", pointerIndex, "] ", point);
-		
-		View pointer = mTouchPointers[pointerIndex];
+		TouchPointer pointer = mTouchPointers[pointerIndex];
 		AbsoluteLayout.LayoutParams alp = (AbsoluteLayout.LayoutParams) pointer
 				.getLayoutParams();
 		alp.x = point.x;
 		alp.y = point.y;
 		mContentView.updateViewLayout(pointer, alp);
-	}
-
-	private boolean isDevOptionShowTouchesChecked() {
-		return false;
+		pointer.show();
 	}
 
 	private void requestMessure() {
@@ -227,6 +232,58 @@ public class SystemOverlayView extends FloatingView implements
 		metrics.requestMessure();
 
 		mWindowParams.height = ScreenMetrics.getResolutionY();
+	}
+	
+	private class TouchPointer extends ImageView {
+
+		private final AnimatorSet mBlinkAnimator;
+
+		public TouchPointer(Context context) {
+			super(context);
+
+			mBlinkAnimator = (AnimatorSet) AnimatorInflater.loadAnimator(
+					context, R.animator.blink);
+			mBlinkAnimator.setTarget(this);
+			mBlinkAnimator.addListener(new AnimatorListener() {
+				
+				@Override
+				public void onAnimationStart(Animator animation) {
+					setVisibility(VISIBLE);
+				}
+				
+				@Override
+				public void onAnimationRepeat(Animator animation) {
+					// never reached
+				}
+				
+				@Override
+				public void onAnimationEnd(Animator animation) {
+					setVisibility(INVISIBLE);
+				}
+				
+				@Override
+				public void onAnimationCancel(Animator animation) {
+					setVisibility(INVISIBLE);
+				}
+			});
+		}
+
+		public void show() {
+			// TODO: sth. wrong
+			AbsoluteLayout.LayoutParams params = (AbsoluteLayout.LayoutParams) getLayoutParams();
+			final int x = (int) (params.x + getX());
+			final int y = (int) (params.y + getY());
+			DroidPop.debug("Rect(", x, ", ", y, " - ",
+					x + getMeasuredWidth(), ", ",
+					y + getMeasuredHeight(), ")");
+			
+			if(mBlinkAnimator.isRunning()) {
+				mBlinkAnimator.cancel();
+			}
+			
+			mBlinkAnimator.start();
+		}
+
 	}
 	
 }
