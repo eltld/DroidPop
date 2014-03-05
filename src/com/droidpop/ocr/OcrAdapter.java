@@ -115,7 +115,6 @@ public abstract class OcrAdapter {
 		
 		Integer max = Integer.MIN_VALUE;
 		Integer min = Integer.MAX_VALUE;
-		Integer dist = min;
 		Rect target = null;
 		boolean update = false;
 		
@@ -125,15 +124,14 @@ public abstract class OcrAdapter {
 			if(area > max) {
 				update = true;
 			} else if(area == max) {
-				dist = getDisdence(touchPoint, overlaps.get(i).second);
-				if(dist < min) {
+				if(getDisdence(touchPoint, overlaps.get(i).second) < min) {
 					update = true;
 				}
 			}
 			
 			if(update) {
 				max = area;
-				min = dist;
+				min = getDisdence(touchPoint, overlaps.get(i).second);
 				target = overlaps.get(i).second;
 				update = false;
 			}
@@ -167,18 +165,21 @@ public abstract class OcrAdapter {
 		if(touchRect.right <= rect.left) {
 			return null; // rect entirely at right side
 		}
-		if(touchRect.bottom >= rect.top) {
+		if(touchRect.bottom <= rect.top) {
 			return null; // rect entirely below
 		}
 		
 		// other cases, overlap
 		Rect overlap = new Rect();
-		overlap.left = Math.max(touchRect.left, touchRect.left);
-		overlap.top = Math.max(touchRect.top, touchRect.top);
-		overlap.right = Math.min(touchRect.right, touchRect.right);
-		overlap.left = Math.min(touchRect.bottom, touchRect.bottom);
+		overlap.left = Math.max(touchRect.left, rect.left);
+		overlap.top = Math.max(touchRect.top, rect.top);
+		overlap.right = Math.min(touchRect.right, rect.right);
+		overlap.bottom = Math.min(touchRect.bottom, rect.bottom);
+		
+		final int area = overlap.width() * overlap.height();
+		DroidPop.debug(overlap, ", area: ", area);
 
-		return (overlap.width() * overlap.height());
+		return area;
 	}
 	
 	private static int getDisdence(Point touchPoint, Rect rect) {

@@ -152,7 +152,7 @@ public class TessTwoAdapter extends OcrAdapter {
 			baseApi.setRectangle(target);
 			recognizedText = baseApi.getUTF8Text();
 			recognizedText = recognizedText
-					.replaceAll("[^a-zA-Z0-9]+", " ");
+					.replaceAll("[^a-zA-Z0-9\']+", " ");
 
 			baseApi.setRectangle(mRegionRect);
 		}

@@ -11,6 +11,7 @@ import android.animation.AnimatorSet;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Point;
+import android.graphics.PointF;
 import android.view.MotionEvent;
 import android.view.MotionEvent.PointerCoords;
 import android.view.PointerIcon;
@@ -58,12 +59,12 @@ public class SystemOverlayView extends FloatingView implements
 		for (int i = 0; i != MAX_MULTI_TOUCH_POINT_SUPPORTED; ++i) {
 			PointerIcon icon = factory.createDefaultPointer();
 			Bitmap bitmap = icon.getBitmap();
-			Point hotspotPoint = new Point(
-					(int)(icon.getHotSpotX() + 0.5f),
-					(int)(icon.getHotSpotY() + 0.5f));
-			mTouchPointers[i] = new TouchPointer(context);
+			PointF hotspotPoint = new PointF(
+					icon.getHotSpotX(),
+					icon.getHotSpotY());
+			mTouchPointers[i] = new TouchPointer(context, hotspotPoint);
 			mTouchPointers[i].setImageBitmap(bitmap);
-			addTouchPointer(mTouchPointers[i], hotspotPoint);
+			addTouchPointer(mTouchPointers[i]);
 		}
 
 		mTouchable = false;
@@ -203,13 +204,13 @@ public class SystemOverlayView extends FloatingView implements
 		}
 	}
 	
-	private void addTouchPointer(View pointer, Point hotspotPoint) {
+	private void addTouchPointer(TouchPointer pointer) {
 		AbsoluteLayout.LayoutParams alp = new AbsoluteLayout.LayoutParams(
 				LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT, 
 				0, 0);
-
-		pointer.setX(-hotspotPoint.x);
-		pointer.setY(-hotspotPoint.y);
+		
+		pointer.setX(-pointer.getHotSpotX());
+		pointer.setY(-pointer.getHotSpotY());
 		pointer.setVisibility(INVISIBLE);
 		pointer.bringToFront();
 		
@@ -236,10 +237,17 @@ public class SystemOverlayView extends FloatingView implements
 	
 	private class TouchPointer extends ImageView {
 
+		private final PointF mHotspotPoint;
 		private final AnimatorSet mBlinkAnimator;
-
+		
 		public TouchPointer(Context context) {
+			this(context, null);
+		}
+
+		public TouchPointer(Context context, PointF hotspotPoint) {
 			super(context);
+			
+			mHotspotPoint = hotspotPoint;
 
 			mBlinkAnimator = (AnimatorSet) AnimatorInflater.loadAnimator(
 					context, R.animator.blink);
@@ -267,13 +275,28 @@ public class SystemOverlayView extends FloatingView implements
 				}
 			});
 		}
+		
+		public float getHotSpotX() {
+			if(mHotspotPoint != null) {
+				return mHotspotPoint.x;
+			} else {
+				return getMeasuredWidth() / 2.f;
+			}
+		}
+		
+		public float getHotSpotY() {
+			if(mHotspotPoint != null) {
+				return mHotspotPoint.y;
+			} else {
+				return getMeasuredHeight() / 2.f;
+			}
+		}
 
 		public void show() {
-			// TODO: sth. wrong
 			AbsoluteLayout.LayoutParams params = (AbsoluteLayout.LayoutParams) getLayoutParams();
-			final int x = (int) (params.x + getX());
-			final int y = (int) (params.y + getY());
-			DroidPop.debug("Rect(", x, ", ", y, " - ",
+			final float x = params.x - getHotSpotX();
+			final float y = params.y - getHotSpotY();
+			DroidPop.log(DroidPop.LEVEL_VERBOSE, "Rect(", x, ", ", y, " - ",
 					x + getMeasuredWidth(), ", ",
 					y + getMeasuredHeight(), ")");
 			
