@@ -123,9 +123,15 @@ public class TessTwoAdapter extends OcrAdapter {
 
 	@Override
 	public boolean recognize(Bitmap bitmap) {
+		 // 1280x736, confusing! where's the 64? bug fixed in ScreenCaptureService
+		DroidPop.debug("bitmap size: ", bitmap.getWidth(),
+				"x", bitmap.getHeight(), " px.");
+		
 		baseApi.clear();
 		baseApi.setImage(bitmap);
 		initRegionRect();
+		
+		// check
 		ResultIterator iter = baseApi.getResultIterator();
 		return (iter != null && iter.next(PageIteratorLevel.RIL_SYMBOL));
 	}

@@ -3,7 +3,6 @@ package com.droidpop.activity;
 import android.app.Activity;
 import android.os.Bundle;
 import android.view.Menu;
-import android.view.MotionEvent;
 import android.widget.ImageView;
 
 import com.droidpop.R;
@@ -27,8 +26,6 @@ public class MainActivity extends Activity {
 		TestCase test1 = new OcrTestCase(this, imageView);
 		test1.setUp();
 		
-		
-
 //		WordCapLockView test2 = new WordCapLockView(getApplicationContext());
 //		test2.attachedToWindow();
 //		test2.setEnable();
@@ -39,17 +36,6 @@ public class MainActivity extends Activity {
 		ScreenCoordsManager mgr = (ScreenCoordsManager) DroidPop
 				.getApplication().getAppService(DroidPop.SCREEN_COORDS_SERVICE);
 		mgr.enableShowTouches();
-	}
-	
-	@Override
-	public boolean dispatchTouchEvent(MotionEvent ev) {
-		return super.dispatchTouchEvent(ev);
-	}
-	
-	@Override
-	protected void onResume() {
-		super.onResume();
-		
 	}
 
 	@Override

@@ -58,11 +58,11 @@ public class OcrTestCase implements TestCase, OnClickListener, OnTouchListener {
 	@Override
 	public void onClick(View v) {
 		DroidPop app = DroidPop.getApplication();
-		ScreenCapManager test1 = (ScreenCapManager) app
+		ScreenCapManager mgr = (ScreenCapManager) app
 				.getAppService(DroidPop.SCREEN_CAPTURE_SERVICE);
 		final ImageView imgView = (ImageView) v;
 
-		test1.dispatch(new ScreenCapTaskDispatcher() {
+		mgr.dispatch(new ScreenCapTaskDispatcher() {
 
 			private long curMillis = System.currentTimeMillis();
 
@@ -73,11 +73,11 @@ public class OcrTestCase implements TestCase, OnClickListener, OnTouchListener {
 				Bitmap bitmap = resluts.get(0);
 				mOcr.recognize(bitmap);
 
-				// logCostMillis("ocr ok");
+				 logCostMillis("ocr ok");
 
 				imgView.setImageBitmap(bitmap);
 
-				// logCostMillis("load bitmap ok");
+				 logCostMillis("load bitmap ok");
 			}
 
 			@Override
