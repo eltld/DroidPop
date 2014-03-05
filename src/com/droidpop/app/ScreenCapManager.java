@@ -22,30 +22,7 @@ public class ScreenCapManager implements ServiceManager {
 
 	protected Context mContext;
 	
-	private final ArrayList<WeakReference<ScreenCaptureTask>> mCapTasks = new ArrayList<WeakReference<ScreenCaptureTask>>() {
-
-		private static final long serialVersionUID = 1L;
-
-		public boolean add(WeakReference<ScreenCaptureTask> object) {
-			for(WeakReference<ScreenCaptureTask> ref : this) {
-				if(ref == null || ref.get() == null) {
-					ref = object;
-					return true;
-				}
-			}
-			return super.add(object);
-		};
-
-		public void clear() {
-			for(WeakReference<ScreenCaptureTask> ref : this) {
-				if(ref == null || ref.get() == null) {
-					ref.get().cancel(true);
-				}
-			}
-			
-			super.clear();
-		};
-	};
+	private final ArrayList<WeakReference<ScreenCaptureTask>> mCapTasks = new ArrayList<WeakReference<ScreenCaptureTask>>();
 	
 	protected ScreenCapManager(Context context) {
 		mContext = context;
@@ -53,7 +30,7 @@ public class ScreenCapManager implements ServiceManager {
 	
 	public void dispatch(ScreenCapTaskDispatcher dispatcher) {
 		ScreenCaptureTask task = new ScreenCaptureTask();
-		mCapTasks.add(new WeakReference<ScreenCapManager.ScreenCaptureTask>(task));
+		add(new WeakReference<ScreenCapManager.ScreenCaptureTask>(task));
 		task.setOnScreenCaptureListener(dispatcher);
 		Rect[] bounds = dispatcher.setBounds();
 		if(bounds == null) {
@@ -71,7 +48,7 @@ public class ScreenCapManager implements ServiceManager {
 	}
 
 	protected void stopService() {
-		mCapTasks.clear();
+		clear();
 	}
 	
 	private static interface OnScreenCaptureListener {
@@ -81,6 +58,36 @@ public class ScreenCapManager implements ServiceManager {
 		 */
 		public void onCancelled(String msg);
 	}
+	
+	/**
+	 * add the WeakReference referring a ScreenCaptureTask to the task set.
+	 */
+	private boolean add(WeakReference<ScreenCaptureTask> object) {
+		final int size = mCapTasks.size();
+		for (int i = 0; i != size; ++i) {
+			WeakReference<ScreenCaptureTask> ref = mCapTasks.get(i);
+			if (ref == null || ref.get() == null) {
+				mCapTasks.set(i, object);
+				return true;
+			}
+		}
+		return mCapTasks.add(object);
+	};
+
+
+	/**
+	 * cancel all ScreenCaptureTask if it's not finished, and remove all from
+	 * the task set.
+	 */
+	private void clear() {
+		for (WeakReference<ScreenCaptureTask> ref : mCapTasks) {
+			if (ref != null && ref.get() != null) {
+				ref.get().cancel(true);
+			}
+		}
+
+		mCapTasks.clear();
+	};
 	
 	private class ScreenCaptureTask extends AsyncTask<Rect, Bitmap, ArrayList<Bitmap>> {
 		private static final long WAIT_TIME_THRESHOLD = 30000; // ms
