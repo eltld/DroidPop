@@ -1,6 +1,7 @@
 package com.droidpop.view;
 
 import me.wtao.os.UiThreadHandler;
+import me.wtao.utils.Logcat;
 import me.wtao.utils.ScreenMetrics;
 import me.wtao.view.FloatingView;
 import me.wtao.view.PointerFactory;
@@ -12,10 +13,10 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.graphics.PointF;
+import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.MotionEvent.PointerCoords;
 import android.view.PointerIcon;
-import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.AbsoluteLayout;
@@ -36,6 +37,9 @@ public class SystemOverlayView extends FloatingView implements
 	private static final int MAX_MULTI_TOUCH_POINT_SUPPORTED = 1;
 	
 	private final ViewGroup mContentView;
+	
+	private final GestureDetector mDetector;
+	
 	private final TouchPointer[] mTouchPointers;
 	private Boolean mTouchable;
 	private boolean mShowTouches;
@@ -52,7 +56,57 @@ public class SystemOverlayView extends FloatingView implements
 		
 //		// used to test
 //		setBackgroundResource(R.color.transparent_blue_light);
-//		mContentView.setBackgroundResource(R.color.transparent_blue_light);
+		
+//		mDetector = new GestureDetector(context, new GestureDetector.SimpleOnGestureListener() {
+//			
+//			private int mTaps = 0;
+//			
+//			@Override
+//			public boolean onSingleTapUp(MotionEvent event) {
+//				++mTaps;
+//				
+//				if (mTaps == 1) {
+//					DroidPop.debug("trigger touchable");
+//					enableTouchable(); // bug when long press, we can fix it but not now
+//				} else if (mTaps == 2) {
+//					DroidPop.debug("double tap, and trigger not touchable");
+//					mTaps = 0; // double tap confirmed
+//				}
+//				
+//				return false; // other events should be preceded by
+//			}
+//			
+//			@Override
+//			public boolean onSingleTapConfirmed(MotionEvent event) {
+//				DroidPop.debug("trigger not touchable");
+//				disableTouchable();
+//				mTaps = 0; // single tap confirmed
+//				
+//				return true; // not handle other events
+//			}
+//			
+//			@Override
+//			public boolean onDoubleTap(MotionEvent event) {
+//				DroidPop.debug("trigger OCR & translate action");
+//				disableTouchable();
+//				
+//				return handleTouchEvent(event);
+//			}
+//		});
+		
+		mDetector = new GestureDetector(context, new GestureDetector.SimpleOnGestureListener() {
+
+			@Override
+			public boolean onSingleTapConfirmed(MotionEvent event) {
+				return handleTouchEvent(event);
+			}
+
+			@Override
+			public boolean onDoubleTap(MotionEvent event) {
+				return handleTouchEvent(event);
+			}
+			
+		});
 		
 		PointerFactory factory = new PointerFactory(context);
 		mTouchPointers = new TouchPointer[MAX_MULTI_TOUCH_POINT_SUPPORTED];
@@ -106,7 +160,7 @@ public class SystemOverlayView extends FloatingView implements
 	}
 	
 	@Override
-	public void onScreenTouch(MotionEvent event) {
+	public void onScreenTouch(final MotionEvent event) {
 		synchronized (mTouchable) {
 			if (mTouchable) {
 				DroidPop.debug("has been touched, not handle again.");
@@ -114,7 +168,17 @@ public class SystemOverlayView extends FloatingView implements
 			}
 		}
 		
-		handleTouchEvent(event);
+		UiThreadHandler handler = new UiThreadHandler();
+		handler.runOnUiThread(new Runnable() {
+
+			@Override
+			public void run() {
+				DroidPop.log(DroidPop.LEVEL_VERBOSE, Logcat.shortFor(event));
+				mDetector.onTouchEvent(event);
+			}
+
+		});
+
 	}
 
 	@Override
@@ -131,7 +195,8 @@ public class SystemOverlayView extends FloatingView implements
 			}
 		}
 		
-		return handleTouchEvent(event);
+		DroidPop.log(DroidPop.LEVEL_VERBOSE, Logcat.shortFor(event));
+		return mDetector.onTouchEvent(event);
 	}
 	
 	@Override
@@ -171,36 +236,52 @@ public class SystemOverlayView extends FloatingView implements
 					(!mTouchable ? " not touchable" : empty));
 			return false;
 		}
-		
+
 		try {
-			UiThreadHandler handler = new UiThreadHandler();
-			handler.runOnUiThread(new Runnable() {
-
-				@Override
-				public void run() {
-					switch (event.getAction() & MotionEvent.ACTION_MASK) {
-					case MotionEvent.ACTION_DOWN:
-						PointerCoords pointerCoords = new PointerCoords();
-						Point point = new Point();
-						final int cnt = Math.min(event.getPointerCount(), MAX_MULTI_TOUCH_POINT_SUPPORTED);
-						for (int i = 0; i != cnt; ++i) {
-							event.getPointerCoords(i, pointerCoords);
-							point.x = (int) (pointerCoords.x + 0.5f);
-							point.y = (int) (pointerCoords.y + 0.5f);
-							showTouchPointer(i, point);
-						}
-						break;
-
-					default:
-						break;
-					}
+			switch (event.getAction() & MotionEvent.ACTION_MASK) {
+			case MotionEvent.ACTION_DOWN:
+				PointerCoords pointerCoords = new PointerCoords();
+				Point point = new Point();
+				final int cnt = Math.min(event.getPointerCount(),
+						MAX_MULTI_TOUCH_POINT_SUPPORTED);
+				for (int i = 0; i != cnt; ++i) {
+					event.getPointerCoords(i, pointerCoords);
+					point.x = (int) (pointerCoords.x + 0.5f);
+					point.y = (int) (pointerCoords.y + 0.5f);
+					showTouchPointer(i, point);
 				}
-				
-			});
-
+				break;
+			default:
+				break;
+			}
+			
 			return true;
 		} catch (Exception e) {
 			return false;
+		}
+	}
+	
+	private void enableTouchable() {
+		synchronized (mTouchable) {
+			if(mTouchable) {
+				return;
+			}
+			
+			mWindowParams.flags &= ~WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE;
+			sWindowManager.updateViewLayout(this, mWindowParams);
+			mTouchable = true;
+		}
+	}
+	
+	private void disableTouchable() {
+		synchronized (mTouchable) {
+			if(!mTouchable) {
+				return;
+			}
+			
+			mWindowParams.flags |= WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE;
+			sWindowManager.updateViewLayout(this, mWindowParams);
+			mTouchable = false;
 		}
 	}
 	

@@ -3,13 +3,10 @@ package com.droidpop.activity;
 import android.app.Activity;
 import android.os.Bundle;
 import android.view.Menu;
-import android.widget.ImageView;
 
 import com.droidpop.R;
 import com.droidpop.app.DroidPop;
 import com.droidpop.app.ScreenCoordsManager;
-import com.droidpop.test.OcrTestCase;
-import com.droidpop.test.TestCase;
 
 public class MainActivity extends Activity {
 	
@@ -22,9 +19,9 @@ public class MainActivity extends Activity {
 		
 		setContentView(R.layout.activity_main);
 		
-		ImageView imageView = (ImageView) findViewById(R.id.screencap);
-		TestCase test1 = new OcrTestCase(this, imageView);
-		test1.setUp();
+//		ImageView imageView = (ImageView) findViewById(R.id.screencap);
+//		TestCase test1 = new OcrTestCase(this, imageView);
+//		test1.setUp();
 		
 //		WordCapLockView test2 = new WordCapLockView(getApplicationContext());
 //		test2.attachedToWindow();
