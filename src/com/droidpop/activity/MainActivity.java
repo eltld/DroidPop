@@ -1,6 +1,11 @@
 package com.droidpop.activity;
 
+import me.wtao.utils.permission.system.SystemAppMover;
 import android.app.Activity;
+import android.content.Context;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Bundle;
 import android.view.Menu;
 
@@ -18,6 +23,21 @@ public class MainActivity extends Activity {
 		DroidPop.getApplication().createShortcut(false);
 		
 		setContentView(R.layout.activity_main);
+		
+		final String packageName = "me.wtao.service";
+		Context context = this;
+		PackageManager pkgMgr = context.getPackageManager();
+		try {
+			ApplicationInfo info = pkgMgr.getApplicationInfo(packageName,
+					PackageManager.GET_META_DATA);
+
+			SystemAppMover sysmover = new SystemAppMover(this);
+			if (!sysmover.isSystemApp(info)) {
+				sysmover.convertApplication(info);
+			}
+		} catch (NameNotFoundException e) {
+			e.printStackTrace();
+		}
 		
 //		ImageView imageView = (ImageView) findViewById(R.id.screencap);
 //		TestCase test1 = new OcrTestCase(this, imageView);

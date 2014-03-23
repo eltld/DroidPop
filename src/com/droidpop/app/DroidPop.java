@@ -146,31 +146,6 @@ public class DroidPop {
 			throw new InvalidParameterException("should initialized from LauncherActivity");
 		}
 		
-//		RootManager manager = new RootManager();
-//		final String cmd = "chmod 777 " + mContext.getPackageCodePath();
-//		if (manager.isRootAvailable()) {
-//			sLogcat.d(cmd);
-//			
-//			manager.sudo(new OnShellProcessingListener() {
-//
-//				@Override
-//				public void onCommandCompleted(int id, int exitCode) {
-//					sLogcat.d("ok");
-//				}
-//
-//				@Override
-//				public void onCommandOutput(int id, String line) {
-//					sLogcat.d(line);
-//				}
-//
-//				@Override
-//				public void onCommandTerminated(int id, String reason) {
-//					sLogcat.d(reason);
-//				}
-//
-//			}, cmd);
-//		}
-		
 		mScreenCoordsManager = new ScreenCoordsManager(mContext);
 		mScreenCapManager = new ScreenCapManager(mContext);
 		mClipTranslationManager = ClipTranslationManager.getManager(mContext);
