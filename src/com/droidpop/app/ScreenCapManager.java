@@ -188,14 +188,16 @@ public class ScreenCapManager implements ServiceManager {
 		private void connect() {
 			bindService();
 			
-			// blocked and wait until connection established
-			synchronized (this) {
-				try {
-					DroidPop.debug("TID", Thread.currentThread().getId(),
-							": blocked and wait...");
-					wait((mConnCnt == 0) ? TIME_OUT_SERVICE_ANR : mWaitTimeout);				
-				} catch (InterruptedException e) {
-					DroidPop.log(DroidPop.LEVEL_WARN, "oops, cannot wait to go!");
+			if(!mIsBound) {
+				// blocked and wait until connection established
+				synchronized (this) {
+					try {
+						DroidPop.debug("TID", Thread.currentThread().getId(),
+								": blocked and wait...");
+						wait((mConnCnt == 0) ? TIME_OUT_SERVICE_ANR : mWaitTimeout);				
+					} catch (InterruptedException e) {
+						DroidPop.log(DroidPop.LEVEL_WARN, "oops, cannot wait to go!");
+					}
 				}
 			}
 			
