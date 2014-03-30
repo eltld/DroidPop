@@ -15,5 +15,9 @@
         why this word does this\n
         i haven\'t got a clue\n
 	</string>
+	
+    <!-- content description -->
+    <string name="close">close</string>
+    <string name="word_entry">word</string>
 
 </resources>

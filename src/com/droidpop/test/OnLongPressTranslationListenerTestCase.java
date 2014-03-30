@@ -2,6 +2,7 @@ package com.droidpop.test;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Point;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.MotionEvent.PointerCoords;
@@ -13,6 +14,7 @@ import com.droidpop.app.ClipTranslationManager.OnLongPressTranslationListener;
 import com.droidpop.app.DroidPop;
 import com.droidpop.dict.TranslationTask.Status;
 import com.droidpop.dict.WordEntry;
+import com.droidpop.view.LightTranslationView;
 
 public class OnLongPressTranslationListenerTestCase implements TestCase, OnTouchListener {
 	
@@ -26,7 +28,7 @@ public class OnLongPressTranslationListenerTestCase implements TestCase, OnTouch
 	 * <b>problem solved but why? it look likes depending on uptimeMillis()</b>
 	 */
 	private GestureDetector mDetector;
-	private GestureDetector.OnGestureListener listener = new GestureDetector.SimpleOnGestureListener() {
+	private GestureDetector.OnGestureListener mListener = new GestureDetector.SimpleOnGestureListener() {
 		private PointerCoords mCoords = new PointerCoords();
 		
 		@Override
@@ -59,7 +61,7 @@ public class OnLongPressTranslationListenerTestCase implements TestCase, OnTouch
 	public OnLongPressTranslationListenerTestCase(Context context, View v) {
 		mContext = context;
 		mTargetListener = new SimpleOnLongPressTranslationListener(mContext);
-		mDetector = new GestureDetector(mContext, listener);
+		mDetector = new GestureDetector(mContext, mListener);
 		
 		v.setOnTouchListener(this);
 	}
@@ -89,18 +91,34 @@ public class OnLongPressTranslationListenerTestCase implements TestCase, OnTouch
 	
 	private class SimpleOnLongPressTranslationListener extends OnLongPressTranslationListener {
 
+		private final LightTranslationView mToast;
+		
 		public SimpleOnLongPressTranslationListener(Context context) {
 			super(context);
+			
+			mToast = new LightTranslationView(context);
 		}
 
 		@Override
 		public void onTranslated(WordEntry entry, Status state) {
 			System.out.println(entry.toString());
+			
+			mToast.setWordEntryQuery(entry.getWord());
+			mToast.setTranslation(entry);
 		}
 
 		@Override
 		public void onClipped(PointerCoords coords) {
-			System.out.println(((coords == null) ? "null" : coords.toString()));
+			DroidPop.debug(((coords == null) ? "null" : coords.toString()));
+			
+			Point point = new Point();
+			point.x = ((coords == null) ? 0 : (int) coords.x);
+			point.y = ((coords == null) ? 0 : (int) coords.y);
+			
+			DroidPop.debug(point);
+			
+//			mToast.popUp(point);
+			mToast.show();
 		}
 		
 	}

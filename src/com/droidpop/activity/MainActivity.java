@@ -9,6 +9,7 @@ import com.droidpop.R;
 import com.droidpop.app.DroidPop;
 import com.droidpop.app.ScreenCoordsManager;
 import com.droidpop.test.OcrTestCase;
+import com.droidpop.test.OnLongPressTranslationListenerTestCase;
 import com.droidpop.test.TestCase;
 
 public class MainActivity extends Activity {
@@ -45,8 +46,8 @@ public class MainActivity extends Activity {
 //		test2.attachedToWindow();
 //		test2.setEnable();
 
-//		TestCase test3 = new OnLongPressTranslationListenerTestCase(this);
-//		test3.setUp();
+		TestCase test3 = new OnLongPressTranslationListenerTestCase(this);
+		test3.setUp();
 		
 		ScreenCoordsManager mgr = (ScreenCoordsManager) DroidPop
 				.getApplication().getAppService(DroidPop.SCREEN_COORDS_SERVICE);
