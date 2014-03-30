@@ -14,6 +14,10 @@ public final class PreferenceSettingsManager {
 	public static final int SHOW_TOUCHES;
 	public static final int SHOW_TOUCHES_CUSTOMIZED;
 	
+	// TYPE_INT below
+	public static final int LIGHT_TRANSLATION_WINDOW_POSITION_X;
+	public static final int LIGHT_TRANSLATION_WINDOW_POSITION_Y;
+	
 	// Developer Option below
 	public enum DeveloperOption {
 		SHOW_TOUCHES,
@@ -49,6 +53,18 @@ public final class PreferenceSettingsManager {
 		sKeyMap.put(SHOW_TOUCHES_CUSTOMIZED, "show_touches");
 		sDefaultMap.put(SHOW_TOUCHES_CUSTOMIZED, true);
 		// end init TYPE_BOOLEAN
+		
+		// init TYPE_INT
+		autoincr = 1;
+		LIGHT_TRANSLATION_WINDOW_POSITION_X = TYPE_INT | (autoincr++);
+		LIGHT_TRANSLATION_WINDOW_POSITION_Y = TYPE_INT | (autoincr++);
+		
+		sKeyMap.put(LIGHT_TRANSLATION_WINDOW_POSITION_X, "light_translation_window_position_x");
+		sDefaultMap.put(LIGHT_TRANSLATION_WINDOW_POSITION_X, 0);
+		
+		sKeyMap.put(LIGHT_TRANSLATION_WINDOW_POSITION_Y, "light_translation_window_position_y");
+		sDefaultMap.put(LIGHT_TRANSLATION_WINDOW_POSITION_Y, 0);
+		// end init TYPE_INT
 	}
 	
 	
