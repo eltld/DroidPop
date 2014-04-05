@@ -1,25 +1,14 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="horizontal"
+    android:background="@android:color/black"
     tools:context=".MainActivity" >
 
-    <TextView
-        android:id="@+id/text"
-        android:layout_width="wrap_content"
+    <include
+        android:layout_width="368dp"
         android:layout_height="match_parent"
-        android:gravity="center"
-        android:text="@string/text"
-        android:textSize="24sp"
-        android:textAppearance="?android:attr/textAppearanceLarge" />
+        android:layout_centerInParent="true"
+        layout="@layout/glow_pad_view" />
 
-    <ImageView
-        android:padding="4dp"
-        android:id="@+id/screencap"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:layout_weight="1"
-        android:scaleType="centerInside" />
-
-</LinearLayout>
+</RelativeLayout>

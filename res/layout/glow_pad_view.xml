@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<me.wtao.widget.GlowPadView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:droidpop="http://schemas.android.com/apk/res/com.droidpop"
+    android:id="@+id/glow_pad_view"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center"
+    android:background="@android:color/transparent"
+    android:focusable="true"
+    android:visibility="visible"
+    
+    droidpop:directionDescriptions="@array/lock_unlock_direction_descriptions"
+    droidpop:feedbackCount="1"
+    droidpop:glowRadius="@dimen/glowpadview_glow_radius"
+    droidpop:handleDrawable="@drawable/ic_alarm_alert_touch_handle"
+    droidpop:innerRadius="@dimen/glowpadview_inner_radius"
+    droidpop:outerRadius="@dimen/glowpadview_target_placement_radius"
+    droidpop:outerRingDrawable="@drawable/ic_alarm_alert_outerring"
+    droidpop:pointDrawable="@drawable/ic_lockscreen_glowdot"
+    droidpop:snapMargin="@dimen/glowpadview_snap_margin"
+    droidpop:targetDescriptions="@array/lock_unlock_descriptions"
+    droidpop:targetDrawables="@array/lock_unlock_drawables"
+    droidpop:vibrationDuration="20" />
