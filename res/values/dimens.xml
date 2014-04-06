@@ -6,12 +6,12 @@
     
     <dimen name="word_entry_editor_padding_left">8dp</dimen>
     <dimen name="light_translation_content_padding">8dp</dimen>
+    
+    <!-- Diameter of outer shape drawable shown in navbar search-->
+    <dimen name="navbar_lock_outerring_diameter">340dp</dimen>
 
-    <!-- Size of alarm alert outer ring. -->
-    <dimen name="glowpadview_outerring_diameter">270dip</dimen>
-
-    <!-- Default target placement radius for GlowPadView. Should be 1/2 of outerring diameter. -->
-    <dimen name="glowpadview_target_placement_radius">135dip</dimen>
+    <!-- Diameter of outer shape drawable shown in navbar search. Should be 1/2 of above value -->
+    <dimen name="navbar_lock_outerring_radius">170dp</dimen>
 
     <!-- Default glow radius for GlowPadView -->
     <dimen name="glowpadview_glow_radius">75dip</dimen>

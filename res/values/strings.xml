@@ -9,13 +9,10 @@
     <string name="close">close</string>
     <string name="word_entry">word</string>
     
-    <!-- Button labels on the alarm dialog: Dismiss -->
-    <string name="alarm_alert_dismiss_text">Dismiss</string>
-    <!-- Button labels on the alarm dialog: Snooze -->
-    <string name="alarm_alert_snooze_text">Snooze</string>
-    <!-- Description of the right direction in the alarm alert screen. [CHAR LIMIT=NONE] -->
-    <string name="description_direction_right">Slide right to dismiss</string>
-    <!-- Description of the left direction in the alarm alert screen. [CHAR LIMIT=NONE] -->
-    <string name="description_direction_left">Slide left to snooze</string>
+    <!-- WordCapLockView description -->
+    <string name="lock_screen_text">Lock screen</string>
+    <string name="unlock_screen_text">Unlock screen</string>
+    <string name="description_direction_lock">Slide up to lock</string>
+    <string name="description_direction_unlock">Slide up to unlock</string>
     
 </resources>

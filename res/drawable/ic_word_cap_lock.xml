@@ -21,12 +21,17 @@
         android:state_enabled="true"
         android:state_active="false"
         android:state_focused="false"
-        android:drawable="@drawable/ic_lockscreen_alarm"/>
+        android:drawable="@drawable/ic_word_cap_lock_normal"/>
 
-    <!-- "Pressed" state uses the same simple "ring" image as on the lockscreen -->
     <item
         android:state_enabled="true"
         android:state_active="true"
         android:state_focused="false"
-        android:drawable="@drawable/ic_lockscreen_handle_pressed"/>
+        android:drawable="@drawable/ic_word_cap_lock_activated"/>
+
+    <item
+        android:state_enabled="true"
+        android:state_active="false"
+        android:state_focused="true"
+        android:drawable="@drawable/ic_word_cap_lock_activated"/>
 </selector>

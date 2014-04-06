@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    
+    <integer translatable="false" name="config_feedback_count">0</integer>
+    <integer translatable="false" name="config_vibration_duration">0</integer>
+    
+</resources>

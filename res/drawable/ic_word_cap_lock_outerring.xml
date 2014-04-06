@@ -16,22 +16,12 @@
   ~ limitations under the License
   -->
 
-<selector xmlns:android="http://schemas.android.com/apk/res/android">
-    <item
-        android:state_enabled="true"
-        android:state_active="false"
-        android:state_focused="false"
-        android:drawable="@drawable/ic_lockscreen_wakeup_normal"/>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+       android:shape="oval"
+    >
+    <size android:height="@dimen/navbar_lock_outerring_diameter"
+          android:width="@dimen/navbar_lock_outerring_diameter"/>
+    <solid android:color="#00000000"/>
+    <stroke android:color="#1affffff" android:width="2dp"/>
+</shape>
 
-    <item
-        android:state_enabled="true"
-        android:state_active="true"
-        android:state_focused="false"
-        android:drawable="@drawable/ic_lockscreen_wakeup_activated"/>
-
-    <item
-        android:state_enabled="true"
-        android:state_active="false"
-        android:state_focused="true"
-        android:drawable="@drawable/ic_lockscreen_wakeup_activated"/>
-</selector>
