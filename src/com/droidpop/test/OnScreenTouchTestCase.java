@@ -2,7 +2,7 @@ package com.droidpop.test;
 
 import me.wtao.os.UiThreadHandler;
 import me.wtao.utils.DebugStatusBar;
-import me.wtao.utils.Logcat;
+import me.wtao.utils.Log;
 import android.content.Context;
 import android.view.MotionEvent;
 
@@ -43,7 +43,7 @@ public class OnScreenTouchTestCase implements TestCase, OnScreenTouchListener {
 	
 	@Override
 	public void onScreenTouch(final MotionEvent event) {
-		DroidPop.debug(Logcat.shortFor(event, "action", "x", "y"));
+		DroidPop.debug(Log.shortFor(event, "action", "x", "y"));
 		
 		if(mPrevEvent != null) {
 			mPrevEvent.recycle();
@@ -58,7 +58,7 @@ public class OnScreenTouchTestCase implements TestCase, OnScreenTouchListener {
 			@Override
 			public void run() {
 				mStatusBar.updateDebugStatus(
-						Logcat.shortFor(event, "action", "x", "y"));
+						Log.shortFor(event, "action", "x", "y"));
 				
 //				mStatusBar.updateDebugStatus(
 //						getEventInfo(event, mPrevEvent, ACTION),
@@ -85,9 +85,9 @@ public class OnScreenTouchTestCase implements TestCase, OnScreenTouchListener {
 //				
 //				String value;
 //				if(ev.getAction() != prev.getAction()) {
-//					value = DebugStatusBar.I + Logcat.shortFor(event, keyVal);
+//					value = DebugStatusBar.I + Log.shortFor(event, keyVal);
 //				} else {
-//					value = Logcat.shortFor(event, keyVal);
+//					value = Log.shortFor(event, keyVal);
 //				}
 //				return value;
 //			}

@@ -58,7 +58,7 @@ public class TranslationTask extends AsyncTask<String, Integer, WordEntry> {
 			String to = params[1];
 
 			entry = mTranslator.autoTranslate(text, to);
-		} else if (params.length == 3 && !mAutoCheck) {
+		} else if (params.length == 3) {
 			String text = params[0];
 			String from = params[1];
 			String to = params[2];

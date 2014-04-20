@@ -5,7 +5,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Locale;
 
-import me.wtao.utils.Logcat;
+import me.wtao.utils.Log;
 import me.wtao.utils.ScreenMetrics;
 import android.app.Activity;
 import android.content.Context;
@@ -116,7 +116,7 @@ public class OcrTestCase implements TestCase, OnClickListener, OnTouchListener {
 			Point point = new Point((int) (event.getRawX() + 0.5f),
 					(int) (event.getRawY() + 0.5f));
 			
-			DroidPop.log(DroidPop.LEVEL_VERBOSE, Logcat.shortFor(event, "x", "y"), " -> raw ", point);
+			DroidPop.log(DroidPop.LEVEL_VERBOSE, Log.shortFor(event, "x", "y"), " -> raw ", point);
 			DroidPop.debug(mOcr.getText(point));
 		}
 		

@@ -6,7 +6,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Locale;
 
-import me.wtao.utils.Logcat;
+import me.wtao.utils.Log;
 import android.annotation.SuppressLint;
 import android.content.ClipData;
 import android.content.ClipboardManager;
@@ -142,7 +142,7 @@ public class ClipTranslationManager implements ServiceManager, ClipboardManager.
 
 			@Override
 			public void onScreenTouch(MotionEvent event) {
-				DroidPop.log(DroidPop.LEVEL_VERBOSE, Logcat.shortFor(event));
+				DroidPop.log(DroidPop.LEVEL_VERBOSE, Log.shortFor(event));
 				
 				switch (event.getAction() & MotionEvent.ACTION_MASK) {
 				case MotionEvent.ACTION_DOWN:

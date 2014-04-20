@@ -6,7 +6,7 @@ import java.security.InvalidParameterException;
 
 import junit.framework.Assert;
 import me.wtao.app.LauncherShortcut;
-import me.wtao.utils.Logcat;
+import me.wtao.utils.Log;
 import android.app.Activity;
 import android.content.Context;
 
@@ -24,10 +24,10 @@ public class DroidPop {
 	public static final int LEVEL_ERROR = 4;
 	
 	private volatile static DroidPop sDroidPop = null;
-	private final static Logcat sLogcat = new Logcat();
+	private final static Log Log = new Log();
 	static {
-		sLogcat.setOn();	// if turned off, check the lang package at tess2/
-		sLogcat.calibrateIndexOfCaller(4);
+		Log.setOn();	// if turned off, check the lang package at tess2/
+		Log.calibrateIndexOfCaller(4);
 	}
 	
 	private final Context mContext;
@@ -58,29 +58,29 @@ public class DroidPop {
 	}
 	
 	public static boolean isDebuggable() {
-		return sLogcat.isDebuggable();
+		return Log.isDebuggable();
 	}
 	
 	public static void debug(Object... msg_segs) {
-		sLogcat.d(msg_segs);
+		Log.debug(msg_segs);
 	}
 	
 	public static void log(int level, Object... msg_segs) {
 		switch (level) {
 		case LEVEL_VERBOSE:
-			sLogcat.v(msg_segs);
+			Log.vobe(msg_segs);
 			break;
 		case LEVEL_DEBUG:
-			sLogcat.d(msg_segs);
+			Log.debug(msg_segs);
 			break;
 		case LEVEL_INFO:
-			sLogcat.i(msg_segs);
+			Log.inform(msg_segs);
 			break;
 		case LEVEL_WARN:
-			sLogcat.w(msg_segs);
+			Log.warn(msg_segs);
 			break;
 		case LEVEL_ERROR:
-			sLogcat.e(msg_segs);
+			Log.error(msg_segs);
 			break;
 		}
 	}
@@ -142,7 +142,7 @@ public class DroidPop {
 			mActivity = (Activity) context;
 		} else {
 			final String appName = mContext.getResources().getString(R.string.app_name);
-			sLogcat.w(appName, " is not initialized from LauncherActivity!");
+			Log.warn(appName, " is not initialized from LauncherActivity!");
 			throw new InvalidParameterException("should initialized from LauncherActivity");
 		}
 		

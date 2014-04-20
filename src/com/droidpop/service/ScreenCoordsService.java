@@ -3,7 +3,7 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 
 import junit.framework.Assert;
-import me.wtao.utils.Logcat;
+import me.wtao.utils.Log;
 import me.wtao.utils.ScreenMetrics;
 import me.wtao.utils.TouchDeviceParser;
 import android.annotation.SuppressLint;
@@ -21,7 +21,10 @@ import android.view.MotionEvent.PointerProperties;
 import com.droidpop.view.OnScreenTouchListener;
 import com.droidpop.view.SystemOverlayView;
 
-public class ScreenCoordsService extends Service {	
+public class ScreenCoordsService extends Service {
+	
+	private static final String TAG = "ScreenCoordsService";
+	
 	private static final int AXIS_X = 0;	// MotionEvent.AXIS_X
 	private static final int AXIS_Y = 1;	// MotionEvent.AXIS_Y
 	
@@ -31,10 +34,6 @@ public class ScreenCoordsService extends Service {
 	private static final TouchDeviceParser sDevice = TouchDeviceParser.getTouchDeviceParser();
 	
 	private static final boolean sPerformanceAccelerate = true;
-	private static final Logcat sLogcat = new Logcat();
-	static {
-		sLogcat.setOn();	// debug mode enable
-	}
 	
 	private WeakReference<NativeEventParserDaemon> mDaemonRef;
 	private ArrayList<WeakReference<OnScreenTouchListener>> mOnScreenTouchListeners;
@@ -43,11 +42,11 @@ public class ScreenCoordsService extends Service {
 	
 	@Override
 	public void onCreate() {
-		sLogcat.d("entry");
+		Log.d(TAG, "entry");
 		
 		mDaemonRef = NativeEventParserDaemon.getDaemonRef(this);
 		if(mDaemonRef.get() == null) {
-			sLogcat.e("failed to ref the daemon!");
+			Log.e(TAG, "failed to ref the daemon!");
 		}
 		Thread.State state = mDaemonRef.get().getState();
 		if (state == Thread.State.NEW) {				
@@ -85,7 +84,7 @@ public class ScreenCoordsService extends Service {
 		
 	@Override
 	public void onDestroy() {
-		sLogcat.d("entry");
+		Log.d(TAG, "entry");
 
 //		mDaemonRef.get().recycle(); // must before stop()
 //		mDaemonRef.get().stop(); // TODO: crash, need stop with safety
@@ -121,14 +120,14 @@ public class ScreenCoordsService extends Service {
 	}
 	
 	public void notifyAllListeners() {
-		sLogcat.v("start...");
+		Log.v(TAG, "start...");
 		
 		MotionEvent event = packetEvent();
 		if(mOverlayView.isShowTouches()) {
 			mOverlayView.onScreenTouch(event);
 		}
 		
-		sLogcat.d(Thread.currentThread());
+		Log.d(TAG, Thread.currentThread());
 		synchronized (mOnScreenTouchListeners) {
 			ArrayList<WeakReference<OnScreenTouchListener>> invalied = 
 					new ArrayList<WeakReference<OnScreenTouchListener>>();
@@ -147,7 +146,7 @@ public class ScreenCoordsService extends Service {
 		
 		mDaemonRef.get().ack();
 		
-		sLogcat.v("ok.");
+		Log.v(TAG, "ok.");
 	}
 	
 	@SuppressLint("Recycle")
@@ -186,7 +185,7 @@ public class ScreenCoordsService extends Service {
 					getSource(),
 					getFlags());
 		} else {
-			sLogcat.w("version is too low: api " + Build.VERSION.SDK_INT);
+			Log.w(TAG, "version is too low: api " + Build.VERSION.SDK_INT);
 		}
 		return event;
 	}
@@ -384,7 +383,7 @@ public class ScreenCoordsService extends Service {
 		
 		@Override
 		public synchronized void start() {
-			sLogcat.d("start daemon...");
+			Log.d(TAG, "start daemon...");
 			
 //			int resolution[] = { (int) (sDevice.getDisplayWidth() + 0.5f),
 //					(int) (sDevice.getDisplayHeight() + 0.5f) };
@@ -411,7 +410,7 @@ public class ScreenCoordsService extends Service {
 		
 		@Override
 		public void run() {
-			sLogcat.d("run daemon...");
+			Log.d(TAG, "run daemon...");
 			doInBackground();
 			super.run();
 		}
@@ -423,7 +422,7 @@ public class ScreenCoordsService extends Service {
 		 */
 		@SuppressLint("ack")
 		public void sync() {			
-			ScreenCoordsService.sLogcat.v("sync...");
+			Log.v(TAG, "sync...");
 			
 			synchronized (mAvaiable) {
 				mAvaiable = true;
@@ -443,7 +442,7 @@ public class ScreenCoordsService extends Service {
 				}
 			}
 			
-			ScreenCoordsService.sLogcat.v("sync ok.");
+			Log.v(TAG, "sync ok.");
 		}
 		
 		public void ack() {

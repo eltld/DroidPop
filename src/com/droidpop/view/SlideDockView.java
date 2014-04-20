@@ -1,6 +1,6 @@
 package com.droidpop.view;
 
-import me.wtao.utils.Logcat;
+import me.wtao.utils.Log;
 import me.wtao.utils.ScreenMetrics;
 import me.wtao.view.FloatingView;
 import me.wtao.view.Hotspot;
@@ -18,7 +18,7 @@ import com.droidpop.R;
 
 public class SlideDockView extends FloatingView {
 	
-	private static final Logcat sLogcat = new Logcat();
+	private static final String TAG = "SlideDockView";
 
 	private final RelativeLayout mContainer;
 	private final SlidingDrawer mSlidingDrawer;
@@ -59,7 +59,7 @@ public class SlideDockView extends FloatingView {
 			
 			@Override
 			public boolean dispatchTouchEvent(MotionEvent event) {
-				sLogcat.d(Logcat.shortFor(event));
+				Log.d(TAG, Log.shortFor(event));
 				return mSlidingDrawer.dispatchTouchEvent(event);
 			}
 		});

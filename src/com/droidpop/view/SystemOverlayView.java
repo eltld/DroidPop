@@ -1,7 +1,7 @@
 package com.droidpop.view;
 
 import me.wtao.os.UiThreadHandler;
-import me.wtao.utils.Logcat;
+import me.wtao.utils.Log;
 import me.wtao.utils.ScreenMetrics;
 import me.wtao.view.FloatingView;
 import me.wtao.view.PointerFactory;
@@ -173,7 +173,7 @@ public class SystemOverlayView extends FloatingView implements
 
 			@Override
 			public void run() {
-				DroidPop.log(DroidPop.LEVEL_VERBOSE, Logcat.shortFor(event));
+				DroidPop.log(DroidPop.LEVEL_VERBOSE, Log.shortFor(event));
 				mDetector.onTouchEvent(event);
 			}
 
@@ -195,7 +195,7 @@ public class SystemOverlayView extends FloatingView implements
 			}
 		}
 		
-		DroidPop.log(DroidPop.LEVEL_VERBOSE, Logcat.shortFor(event));
+		DroidPop.log(DroidPop.LEVEL_VERBOSE, Log.shortFor(event));
 		return mDetector.onTouchEvent(event);
 	}
 	

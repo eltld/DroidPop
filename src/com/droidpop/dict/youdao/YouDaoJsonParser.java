@@ -6,21 +6,59 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
-import com.droidpop.dict.EntryParseException;
-import com.droidpop.dict.EntryParser;
+import com.droidpop.dict.WordEntryException;
 import com.droidpop.dict.WordCategory;
 import com.droidpop.dict.WordCategoryNotFoundException;
 import com.droidpop.dict.WordEntry;
+import com.droidpop.dict.WordCategory.WordCategoryConfig;
 import com.droidpop.dict.WordEntry.Paraphrase;
+import com.droidpop.dict.online.EntryParser;
 import com.droidpop.dict.youdao.YouDaoJsonResponse.Web;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 public class YouDaoJsonParser implements EntryParser {
-	protected static final WordCategory sCategory;
+	
+	private static class CategoryConfig implements WordCategoryConfig {
+		
+		private static final HashMap<String, Integer> sConfigMap;
+		static {
+			sConfigMap = new HashMap<String, Integer>();
+			
+			sConfigMap.put("abbr.", WordCategory.ABBREVIATION);
+			sConfigMap.put("adj.", WordCategory.ADJECTIVE);
+			sConfigMap.put("adv.", WordCategory.ADVERB);
+			sConfigMap.put("art.", WordCategory.ARTICLE);
+			sConfigMap.put("conj.", WordCategory.CONJUNCTION);
+			sConfigMap.put("int.", WordCategory.INTERJECTION);
+			sConfigMap.put("num.", WordCategory.NUMBERAL);
+			sConfigMap.put("prep.", WordCategory.PREPOSITION);
+			sConfigMap.put("pron.", WordCategory.PRONOUN);
+			
+			sConfigMap.put("n.", WordCategory.NOUN);
+			
+			sConfigMap.put("v.", WordCategory.VERB);
+			sConfigMap.put("vt.", WordCategory.VERB_TRANSITIVE);
+			sConfigMap.put("vi.", WordCategory.VERB_INTRANSITIVE);
+		}
+
+		public static final String abbrGategoryOf(String paraphrase) {
+			return paraphrase.substring(0, paraphrase.indexOf('.') + 1);
+		}
+		
+		@Override
+		public Map<String, Integer> getCategoryMap() {
+			return sConfigMap;
+		}
+		
+	}
+	
+	private static final WordCategory sCategory;
 	static {
-		sCategory = WordCategory.getWordCategoryBy(new YouDaoTranslator.CategoryConfig());
+		sCategory = WordCategory.getWordCategoryBy(new CategoryConfig());
 	}
 	
 	protected final String mEncode; // YouDao APIv1.1 encode: UTF-8
@@ -34,7 +72,7 @@ public class YouDaoJsonParser implements EntryParser {
 	}
 
 	@Override
-	public WordEntry parse(InputStream in) throws EntryParseException {
+	public WordEntry parse(InputStream in) throws WordEntryException {
 		try {
 			BufferedReader reader = new BufferedReader(new InputStreamReader(in, mEncode));
 			try {
@@ -70,9 +108,9 @@ public class YouDaoJsonParser implements EntryParser {
 				reader.close();
 			}
 		} catch (UnsupportedEncodingException e) {
-			throw new EntryParseException(e.toString(), Status.UNSUPPORTED_ENCODING_EXCEPTION);
+			throw new WordEntryException(e.toString(), Status.UNSUPPORTED_ENCODING_EXCEPTION);
 		} catch (IOException e) {
-			throw new EntryParseException(e.getMessage(), Status.IO_EXCEPTION);
+			throw new WordEntryException(e.getMessage(), Status.IO_EXCEPTION);
 		}	
 	}
 
@@ -98,7 +136,7 @@ public class YouDaoJsonParser implements EntryParser {
 		
 		if(explains != null) {
 			for(String explain : explains) {
-				String abbr = YouDaoTranslator.CategoryConfig.abbrGategoryOf(explain);
+				String abbr = CategoryConfig.abbrGategoryOf(explain);
 				try {
 					paraphrases.add(new Paraphrase(sCategory.getCategory(abbr), explain));
 				} catch (WordCategoryNotFoundException e) {
