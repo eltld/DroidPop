@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:droidpop="http://schemas.android.com/apk/res/com.droidpop"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
+    <me.wtao.widget.SlidingDrawer
+        android:id="@+id/slide_dock_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        droidpop:allowSingleTap="true"
+        droidpop:animateOnClick="true"
+        droidpop:collapsedOffset="@dimen/collapsed_offset"
+        droidpop:content="@+id/content"
+        droidpop:expandedOffset="@dimen/expanded_offset"
+        droidpop:handle="@+id/handle"
+        droidpop:orientation="rightToLeft" >
+
+        <RelativeLayout
+            android:id="@id/handle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:clickable="true" >
+
+            <TextView
+                android:layout_width="@dimen/horizontal_handle_width"
+                android:layout_height="@dimen/horizontal_handle_height"
+                android:background="@android:color/holo_red_light"
+                android:gravity="center"
+                android:text="test"
+                android:textColor="@android:color/white" />
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@id/content"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" >
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@android:color/holo_blue_light"
+                android:gravity="center"
+                android:text="content"
+                android:textColor="@android:color/white" />
+        </RelativeLayout>
+    </me.wtao.widget.SlidingDrawer>
+
+</FrameLayout>

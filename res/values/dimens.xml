@@ -25,4 +25,14 @@
     <dimen name="glowpadview_margin_bottom">-64dip</dimen>
     <dimen name="glowpadview_margin_right">0dip</dimen>
     
+    <!-- SlidingDrawer -->
+    <dimen name="sliding_drawer_outter_height">768dp</dimen>
+    <dimen name="sliding_drawer_outter_width">512dp</dimen>
+    <dimen name="horizontal_handle_width">128dp</dimen>
+    <dimen name="horizontal_handle_height">64dp</dimen>
+    <dimen name="vertical_handle_width">@dimen/horizontal_handle_height</dimen>
+    <dimen name="vertical_handle_height">@dimen/horizontal_handle_width</dimen>
+    <dimen name="expanded_offset">64dp</dimen>
+    <dimen name="collapsed_offset">32dp</dimen>
+    
 </resources>

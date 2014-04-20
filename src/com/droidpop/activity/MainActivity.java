@@ -6,7 +6,8 @@ import android.view.Menu;
 
 import com.droidpop.R;
 import com.droidpop.app.DroidPop;
-import com.droidpop.view.WordCapLockView;
+import com.droidpop.test.OnLongPressTranslationListenerTestCase;
+import com.droidpop.test.TestCase;
 
 public class MainActivity extends Activity {
 	
@@ -38,16 +39,20 @@ public class MainActivity extends Activity {
 //		TestCase test1 = new OcrTestCase(this, imageView);
 //		test1.setUp();
 		
-		WordCapLockView test2 = new WordCapLockView(getApplicationContext());
-		test2.attachedToWindow();
-		test2.setEnable();
+//		WordCapLockView test2 = new WordCapLockView(getApplicationContext());
+//		test2.attachedToWindow();
+//		test2.setEnable();
 
-//		TestCase test3 = new OnLongPressTranslationListenerTestCase(this);
-//		test3.setUp();
+		TestCase test3 = new OnLongPressTranslationListenerTestCase(this);
+		test3.setUp();
 //		
 //		ScreenCoordsManager mgr = (ScreenCoordsManager) DroidPop
 //				.getApplication().getAppService(DroidPop.SCREEN_COORDS_SERVICE);
 //		mgr.enableShowTouches();
+		
+//		SlideDockView v = new SlideDockView(getApplicationContext());
+//		v.attachedToWindow();
+//		v.setEnable();
 	}
 
 	@Override
