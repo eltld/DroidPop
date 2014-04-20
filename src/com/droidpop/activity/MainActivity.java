@@ -7,6 +7,7 @@ import android.view.Menu;
 import com.droidpop.R;
 import com.droidpop.app.DroidPop;
 import com.droidpop.dict.offline.OfflineTranslator;
+import com.droidpop.dict.wordnet.WordNetTranslator;
 import com.droidpop.test.OnLongPressTranslationListenerTestCase;
 import com.droidpop.test.TestCase;
 
@@ -47,7 +48,7 @@ public class MainActivity extends Activity {
 		TestCase test3 = new OnLongPressTranslationListenerTestCase(this);
 		test3.setUp();
 		
-		OfflineTranslator translator = new OfflineTranslator(null);
+		OfflineTranslator translator = new WordNetTranslator(this, null);
 		translator.translte("best");
 		
 //		
