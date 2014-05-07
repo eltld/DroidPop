@@ -2,7 +2,6 @@ package com.droidpop.view;
 
 import me.wtao.os.UiThreadHandler;
 import me.wtao.utils.Log;
-import me.wtao.utils.ScreenMetrics;
 import me.wtao.view.FloatingView;
 import me.wtao.view.PointerFactory;
 import android.animation.Animator;
@@ -35,6 +34,7 @@ public class SystemOverlayView extends FloatingView implements
 	 * only support one double-click translate
 	 */
 	private static final int MAX_MULTI_TOUCH_POINT_SUPPORTED = 1;
+	private static SystemOverlayView sInstance;
 	
 	private final ViewGroup mContentView;
 	
@@ -44,9 +44,19 @@ public class SystemOverlayView extends FloatingView implements
 	private Boolean mTouchable;
 	private boolean mShowTouches;
 	private boolean mShowTouchesChecked;
+	
+	public static SystemOverlayView getInstance(Context context) {
+		if(sInstance == null) {
+			sInstance = new SystemOverlayView(context.getApplicationContext());
+		}
+		
+		return sInstance;
+	}
 
-	public SystemOverlayView(Context context) {
+	private SystemOverlayView(Context context) {
 		super(context);
+		
+		mScreenMetrics.setPhysicalScreenMode();
 		
 		mContentView = new AbsoluteLayout(context); // deprecated but best layout here
 		FloatingView.LayoutParams flp = new FloatingView.LayoutParams(
@@ -54,59 +64,56 @@ public class SystemOverlayView extends FloatingView implements
 				RelativeLayout.LayoutParams.MATCH_PARENT);
 		addView(mContentView, flp);
 		
-//		// used to test
-//		setBackgroundResource(R.color.transparent_blue_light);
-		
-//		mDetector = new GestureDetector(context, new GestureDetector.SimpleOnGestureListener() {
-//			
-//			private int mTaps = 0;
-//			
-//			@Override
-//			public boolean onSingleTapUp(MotionEvent event) {
-//				++mTaps;
-//				
-//				if (mTaps == 1) {
-//					DroidPop.debug("trigger touchable");
-//					enableTouchable(); // bug when long press, we can fix it but not now
-//				} else if (mTaps == 2) {
-//					DroidPop.debug("double tap, and trigger not touchable");
-//					mTaps = 0; // double tap confirmed
-//				}
-//				
-//				return false; // other events should be preceded by
-//			}
-//			
-//			@Override
-//			public boolean onSingleTapConfirmed(MotionEvent event) {
-//				DroidPop.debug("trigger not touchable");
-//				disableTouchable();
-//				mTaps = 0; // single tap confirmed
-//				
-//				return true; // not handle other events
-//			}
-//			
-//			@Override
-//			public boolean onDoubleTap(MotionEvent event) {
-//				DroidPop.debug("trigger OCR & translate action");
-//				disableTouchable();
-//				
-//				return handleTouchEvent(event);
-//			}
-//		});
-		
 		mDetector = new GestureDetector(context, new GestureDetector.SimpleOnGestureListener() {
-
+			
+			private int mTaps = 0;
+			
 			@Override
-			public boolean onSingleTapConfirmed(MotionEvent event) {
-				return handleTouchEvent(event);
-			}
-
-			@Override
-			public boolean onDoubleTap(MotionEvent event) {
-				return handleTouchEvent(event);
+			public boolean onSingleTapUp(MotionEvent event) {
+				++mTaps;
+				
+				if (mTaps == 1) {
+					DroidPop.debug("trigger touchable");
+					enableTouchable(); // bug when long press, we can fix it but not now
+				} else if (mTaps == 2) {
+					DroidPop.debug("double tap, and trigger not touchable");
+					mTaps = 0; // double tap confirmed
+				}
+				
+				return false; // other events should be preceded by
 			}
 			
+			@Override
+			public boolean onSingleTapConfirmed(MotionEvent event) {
+				DroidPop.debug("trigger not touchable");
+				disableTouchable();
+				mTaps = 0; // single tap confirmed
+				
+				return true; // not handle other events
+			}
+			
+			@Override
+			public boolean onDoubleTap(MotionEvent event) {
+				DroidPop.debug("trigger OCR & translate action");
+				disableTouchable();
+				
+				return handleTouchEvent(event);
+			}
 		});
+		
+//		mDetector = new GestureDetector(context, new GestureDetector.SimpleOnGestureListener() {
+//
+//			@Override
+//			public boolean onSingleTapConfirmed(MotionEvent event) {
+//				return handleTouchEvent(event);
+//			}
+//
+//			@Override
+//			public boolean onDoubleTap(MotionEvent event) {
+//				return handleTouchEvent(event);
+//			}
+//			
+//		});
 		
 		PointerFactory factory = new PointerFactory(context);
 		mTouchPointers = new TouchPointer[MAX_MULTI_TOUCH_POINT_SUPPORTED];
@@ -130,6 +137,34 @@ public class SystemOverlayView extends FloatingView implements
 		}
 	}
 	
+	public void enableTouchable() {
+		if(!hasAttachedToWindow()) {
+			attachedToWindow();
+		}
+		
+		synchronized (mTouchable) {
+			if(mTouchable) {
+				return;
+			}
+			
+			mWindowParams.flags &= ~WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE;
+			sWindowManager.updateViewLayout(this, mWindowParams);
+			mTouchable = true;
+		}
+	}
+
+	public void disableTouchable() {
+		synchronized (mTouchable) {
+//			if(!mTouchable) {
+//				return;
+//			}
+			
+			mWindowParams.flags |= WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE;
+			sWindowManager.updateViewLayout(this, mWindowParams);
+			mTouchable = false;
+		}
+	}
+
 	public boolean isShowTouches() {
 		return (!mShowTouchesChecked && (mShowTouches || mTouchable));
 	}
@@ -206,7 +241,7 @@ public class SystemOverlayView extends FloatingView implements
 			sWindowManager.updateViewLayout(this, mWindowParams);
 		}
 
-		super.onLayout(changed, l, t, r, ScreenMetrics.getResolutionY());
+		super.onLayout(changed, l, t, r, mScreenMetrics.getResolutionY());
 	}
 
 	@Override
@@ -261,30 +296,6 @@ public class SystemOverlayView extends FloatingView implements
 		}
 	}
 	
-	private void enableTouchable() {
-		synchronized (mTouchable) {
-			if(mTouchable) {
-				return;
-			}
-			
-			mWindowParams.flags &= ~WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE;
-			sWindowManager.updateViewLayout(this, mWindowParams);
-			mTouchable = true;
-		}
-	}
-	
-	private void disableTouchable() {
-		synchronized (mTouchable) {
-			if(!mTouchable) {
-				return;
-			}
-			
-			mWindowParams.flags |= WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE;
-			sWindowManager.updateViewLayout(this, mWindowParams);
-			mTouchable = false;
-		}
-	}
-	
 	private void addTouchPointer(TouchPointer pointer) {
 		AbsoluteLayout.LayoutParams alp = new AbsoluteLayout.LayoutParams(
 				LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT, 
@@ -309,11 +320,8 @@ public class SystemOverlayView extends FloatingView implements
 	}
 
 	private void requestMessure() {
-		ScreenMetrics metrics = new ScreenMetrics(this);
-		metrics.setPhysicalScreenMode();
-		metrics.requestMessure();
-
-		mWindowParams.height = ScreenMetrics.getResolutionY();
+		mScreenMetrics.messure();
+		mWindowParams.height = mScreenMetrics.getResolutionY();
 	}
 	
 	private class TouchPointer extends ImageView {

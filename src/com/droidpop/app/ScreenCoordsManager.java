@@ -29,11 +29,19 @@ public class ScreenCoordsManager implements ServiceManager {
 		mShowTouchesSemaphore = 0;
 	}
 	
-	public void addOnScreenTouchListener(OnScreenTouchListener listener) {
+	public boolean addOnScreenTouchListener(OnScreenTouchListener listener) {
 		if (mService != null) {
-			mService.addOnScreenTouchListener(listener);
+			return mService.addOnScreenTouchListener(listener);
 		} else {
-			mListeners.add(listener);
+			return mListeners.add(listener);
+		}
+	}
+	
+	public boolean removeOnScreenTouchListener(OnScreenTouchListener listener) {
+		if(mService != null) {
+			return mService.removeOnScreenTouchListener(listener);
+		} else {
+			return mListeners.remove(listener);
 		}
 	}
 	

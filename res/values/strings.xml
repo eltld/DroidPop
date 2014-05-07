@@ -4,15 +4,22 @@
     <string name="app_name">DroidPop</string>
     <string name="title_activity_main">MainActivity</string>
     <string name="action_settings">Settings</string>
-	
+    <string name="no_content">No Content</string>
+
     <!-- content description -->
     <string name="close">close</string>
     <string name="word_entry">word</string>
-    
+
     <!-- WordCapLockView description -->
     <string name="lock_screen_text">Lock screen</string>
     <string name="unlock_screen_text">Unlock screen</string>
     <string name="description_direction_lock">Slide up to lock</string>
     <string name="description_direction_unlock">Slide up to unlock</string>
-    
+
+    <!-- Menu items -->
+    <string name="show_touches">Show Touches</string>
+    <string name="search_auto_complete_hint">Click and Type the word</string>
+    <string name="title_recentquery_list">RecentQuerys</string>
+    <string name="title_recentquery_detail">RecentQuery Detail</string>
+
 </resources>

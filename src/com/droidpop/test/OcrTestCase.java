@@ -2,7 +2,6 @@ package com.droidpop.test;
 
 import java.sql.Date;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Locale;
 
 import me.wtao.utils.Log;
@@ -36,7 +35,6 @@ public class OcrTestCase implements TestCase, OnClickListener, OnTouchListener {
 	
 	public OcrTestCase(Context context, View v, ImageView imageView) {
 		ScreenMetrics metrics = new ScreenMetrics(context);
-		metrics.requestMessure();
 		
 		mOcr = new TessTwoAdapter(context);
 		mTouchView = v;
@@ -67,10 +65,9 @@ public class OcrTestCase implements TestCase, OnClickListener, OnTouchListener {
 			private long curMillis = System.currentTimeMillis();
 
 			@Override
-			public void onDone(ArrayList<Bitmap> resluts) {
+			public void onDone(Bitmap bitmap) {
 				logCostMillis("screencap ok");
 
-				Bitmap bitmap = resluts.get(0);
 				mOcr.recognize(bitmap);
 
 				 logCostMillis("ocr ok");
@@ -86,7 +83,7 @@ public class OcrTestCase implements TestCase, OnClickListener, OnTouchListener {
 			}
 
 			@Override
-			public Rect[] setBounds() {
+			public Rect getBound() {
 				return null;
 			}
 

@@ -30,7 +30,7 @@ public class TessTwoAdapter extends OcrAdapter {
 	
 	private String mLanguage;
 
-	private TessBaseAPI baseApi;
+	private TessBaseAPI mBaseApi;
 	private Rect mRegionRect;
 	
 
@@ -60,9 +60,9 @@ public class TessTwoAdapter extends OcrAdapter {
 		File tess2Dir = new File(getOcrDir(), TESSERACT_OCR);
 		String datapath = tess2Dir.getAbsolutePath();
 
-		baseApi = new TessBaseAPI();
-		baseApi.setDebug(true); // TODO: false when release
-		if (!baseApi.init(datapath, mLanguage, TessBaseAPI.OEM_TESSERACT_ONLY)) {
+		mBaseApi = new TessBaseAPI();
+		mBaseApi.setDebug(true); // TODO: false when release
+		if (!mBaseApi.init(datapath, mLanguage, TessBaseAPI.OEM_TESSERACT_ONLY)) {
 			DroidPop.log(DroidPop.LEVEL_ERROR,
 					"initialize tesseract engine failed");
 		}
@@ -81,6 +81,51 @@ public class TessTwoAdapter extends OcrAdapter {
 		}
 	}
 
+	@Override
+	public boolean recognize(Bitmap bitmap) {
+		 // 1280x736, confusing! where's the 64? bug fixed in ScreenCaptureService
+		DroidPop.debug("bitmap size: ", bitmap.getWidth(),
+				"x", bitmap.getHeight(), " px.");
+		
+		mBaseApi.clear();
+		mBaseApi.setImage(bitmap);
+		initRegionRect();
+		
+		// check
+		ResultIterator iter = mBaseApi.getResultIterator();
+		return (iter != null && iter.next(PageIteratorLevel.RIL_SYMBOL));
+	}
+
+	@Override
+	public boolean isConfidence() {
+		return (mBaseApi.meanConfidence() < MEAN_CONFIDENCE_THREHOLD);
+	}
+
+	/**
+	 * @param point
+	 *            the first touch point on screen
+	 * @param encode
+	 *            ignored, default return UTF-8 text
+	 */
+	@Override
+	public String getText(Point point, String encode) {
+		String recognizedText = null;
+		
+		ArrayList<Rect> rects = mBaseApi.getWords().getBoxRects();
+		Rect target = getTargetRect(point, rects);
+		
+		if (target != null) {
+			mBaseApi.setRectangle(target);
+			recognizedText = mBaseApi.getUTF8Text();
+			recognizedText = recognizedText
+					.replaceAll("[^a-zA-Z0-9\']+", " ");
+
+			mBaseApi.setRectangle(mRegionRect);
+		}
+
+		return recognizedText;
+	}
+	
 	private void init() throws FileNotFoundException {
 		File ocrDir = getOcrDir();
 		
@@ -121,58 +166,13 @@ public class TessTwoAdapter extends OcrAdapter {
 		}
 	}
 
-	@Override
-	public boolean recognize(Bitmap bitmap) {
-		 // 1280x736, confusing! where's the 64? bug fixed in ScreenCaptureService
-		DroidPop.debug("bitmap size: ", bitmap.getWidth(),
-				"x", bitmap.getHeight(), " px.");
-		
-		baseApi.clear();
-		baseApi.setImage(bitmap);
-		initRegionRect();
-		
-		// check
-		ResultIterator iter = baseApi.getResultIterator();
-		return (iter != null && iter.next(PageIteratorLevel.RIL_SYMBOL));
-	}
-
-	@Override
-	public boolean isConfidence() {
-		return (baseApi.meanConfidence() < MEAN_CONFIDENCE_THREHOLD);
-	}
-
-	/**
-	 * @param point
-	 *            the first touch point on screen
-	 * @param encode
-	 *            ignored, default return UTF-8 text
-	 */
-	@Override
-	public String getText(Point point, String encode) {
-		String recognizedText = null;
-		
-		ArrayList<Rect> rects = baseApi.getWords().getBoxRects();
-		Rect target = getTargetRect(point, rects);
-		
-		if (target != null) {
-			baseApi.setRectangle(target);
-			recognizedText = baseApi.getUTF8Text();
-			recognizedText = recognizedText
-					.replaceAll("[^a-zA-Z0-9\']+", " ");
-
-			baseApi.setRectangle(mRegionRect);
-		}
-
-		return recognizedText;
-	}
-
 	private void initRegionRect() {
 		int left = Integer.MAX_VALUE;
 		int right = Integer.MIN_VALUE;
 		int top = Integer.MAX_VALUE;
 		int bottom = Integer.MIN_VALUE;
 
-		ArrayList<Rect> regionRects = baseApi.getRegions().getBoxRects();
+		ArrayList<Rect> regionRects = mBaseApi.getRegions().getBoxRects();
 		Rect rect = null;
 		int cnt = regionRects.size();
 

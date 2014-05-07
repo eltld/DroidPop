@@ -17,7 +17,7 @@ import android.os.RemoteException;
 public class ScreenCapManager implements ServiceManager {
 
 	public static interface ScreenCapTaskDispatcher extends OnScreenCaptureListener {
-		public Rect[] setBounds();
+		public Rect getBound();
 	}
 
 	protected Context mContext;
@@ -32,11 +32,11 @@ public class ScreenCapManager implements ServiceManager {
 		ScreenCaptureTask task = new ScreenCaptureTask();
 		add(new WeakReference<ScreenCapManager.ScreenCaptureTask>(task));
 		task.setOnScreenCaptureListener(dispatcher);
-		Rect[] bounds = dispatcher.setBounds();
-		if(bounds == null) {
+		Rect bound = dispatcher.getBound();
+		if(bound == null) {
 			task.execute();
 		} else {
-			task.execute(bounds);
+			task.execute(bound);
 		}
 	}
 
@@ -52,7 +52,7 @@ public class ScreenCapManager implements ServiceManager {
 	}
 	
 	private static interface OnScreenCaptureListener {
-		public void onDone(ArrayList<Bitmap> resluts);
+		public void onDone(Bitmap screencap);
 		/**
 		 * @param msg not used but reserved, error information
 		 */
@@ -89,7 +89,7 @@ public class ScreenCapManager implements ServiceManager {
 		mCapTasks.clear();
 	};
 	
-	private class ScreenCaptureTask extends AsyncTask<Rect, Bitmap, ArrayList<Bitmap>> {
+	private class ScreenCaptureTask extends AsyncTask<Rect, Bitmap, Bitmap> {
 		private static final long WAIT_TIME_THRESHOLD = 30000; // ms
 		private static final long RE_CONNECT_LIMIT = 3; // attempt limit
 		private static final long TIME_OUT_SERVICE_ANR = 10000; // ms
@@ -124,10 +124,8 @@ public class ScreenCapManager implements ServiceManager {
 		 * @return first element is the whole screen capture if success
 		 */
 		@Override
-		protected ArrayList<Bitmap> doInBackground(Rect... rects) {
+		protected Bitmap doInBackground(Rect... rects) {
 			DroidPop.debug("take screen capture...");
-			
-			ArrayList<Bitmap> ret = new ArrayList<Bitmap>();
 			
 			mConnCnt = 0;
 			connect();
@@ -136,14 +134,20 @@ public class ScreenCapManager implements ServiceManager {
 				reconnect();
 			}
 			
+			Bitmap screencap = null;
 			try {
-				Bitmap screencap = mService.takeScreenCapture();
-				ret.add(screencap);
-				Bitmap bmp = null;
-				for(Rect rect : rects) {
-					bmp = Bitmap.createBitmap(screencap,
-							rect.left, rect.top, rect.width(), rect.height());
-					publishProgress(bmp);
+				screencap = mService.takeScreenCapture();
+				
+				Rect bound = null;
+				if (rects.length == 1) {
+					bound = rects[0];
+				}
+				
+				if (bound != null) {
+					Bitmap bmp = Bitmap.createBitmap(screencap, bound.left,
+							bound.top, bound.width(), bound.height());
+					screencap.recycle();
+					screencap = bmp;
 				}
 			} catch (RemoteException e) {
 				DroidPop.log(DroidPop.LEVEL_WARN, e);
@@ -151,7 +155,7 @@ public class ScreenCapManager implements ServiceManager {
 				DroidPop.log(DroidPop.LEVEL_ERROR, e);
 			}
 			
-			return ret;
+			return screencap;
 		}
 		
 		@Override
@@ -160,7 +164,7 @@ public class ScreenCapManager implements ServiceManager {
 		}
 		
 		@Override
-		protected void onPostExecute(ArrayList<Bitmap> result) {
+		protected void onPostExecute(Bitmap result) {
 			DroidPop.debug("done");
 			if(mListener != null) {
 				mListener.onDone(result);
@@ -173,7 +177,7 @@ public class ScreenCapManager implements ServiceManager {
 		}
 		
 		@Override
-		protected void onCancelled(ArrayList<Bitmap> result) {
+		protected void onCancelled(Bitmap result) {
 			DroidPop.debug("cancelled");
 			if(mListener != null) {
 				mListener.onCancelled(null);

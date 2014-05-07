@@ -63,7 +63,9 @@ public class OnLongPressTranslationListenerTestCase implements TestCase, OnTouch
 		mTargetListener = new SimpleOnLongPressTranslationListener(mContext);
 		mDetector = new GestureDetector(mContext, mListener);
 		
-		v.setOnTouchListener(this);
+		if (v != null) {
+			v.setOnTouchListener(this);
+		}
 	}
 	
 	@Override

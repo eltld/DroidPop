@@ -1,8 +1,7 @@
 <resources>
 
-    <!-- Default screen margins, per the Android Design guidelines. -->
-    <dimen name="activity_horizontal_margin">16dp</dimen>
-    <dimen name="activity_vertical_margin">16dp</dimen>
+    <dimen name="main_activity_options_menu_width">360dp</dimen>
+    <dimen name="main_activity_no_content_text_size">32sp</dimen>
     
     <dimen name="word_entry_editor_padding_left">8dp</dimen>
     <dimen name="light_translation_content_padding">8dp</dimen>
@@ -25,14 +24,36 @@
     <dimen name="glowpadview_margin_bottom">-64dip</dimen>
     <dimen name="glowpadview_margin_right">0dip</dimen>
     
-    <!-- SlidingDrawer -->
-    <dimen name="sliding_drawer_outter_height">768dp</dimen>
-    <dimen name="sliding_drawer_outter_width">512dp</dimen>
-    <dimen name="horizontal_handle_width">128dp</dimen>
-    <dimen name="horizontal_handle_height">64dp</dimen>
-    <dimen name="vertical_handle_width">@dimen/horizontal_handle_height</dimen>
-    <dimen name="vertical_handle_height">@dimen/horizontal_handle_width</dimen>
-    <dimen name="expanded_offset">64dp</dimen>
-    <dimen name="collapsed_offset">32dp</dimen>
+    <dimen name="slide_dock_view_width">494px</dimen>
     
+    <dimen name="search_auto_complete_text_size">16sp</dimen>
+    <dimen name="search_auto_complete_margin">8dp</dimen>
+    <dimen name="search_auto_complete_padding">8dp</dimen>
+    <dimen name="search_auto_complete_stroke_width">1dp</dimen>
+    
+    <dimen name="recent_query_list_divider_height">1dp</dimen>
+    <dimen name="recent_query_list_item_margin">4dp</dimen>
+    
+    <dimen name="word_entry_padding_top">4dp</dimen>
+    <dimen name="word_entry_padding_bottom">2dp</dimen>
+    <dimen name="word_entry_padding_left">16dp</dimen>
+    <dimen name="word_entry_padding_right">8dp</dimen>
+    
+    <dimen name="word_entry_basic_paraphrase_padding_top">2dp</dimen>
+    <dimen name="word_entry_basic_paraphrase_padding_bottom">4dp</dimen>
+    <dimen name="word_entry_basic_paraphrase_padding_left">16dp</dimen>
+    <dimen name="word_entry_basic_paraphrase_padding_right">8dp</dimen>
+    
+    <dimen name="menu_list_padding_top">8dp</dimen>
+    <dimen name="menu_list_padding_bottom">16dp</dimen>
+    
+    <dimen name="menu_list_group_padding_inner">8dp</dimen>
+    <dimen name="menu_list_group_divider">1dp</dimen>
+    
+    <dimen name="menu_list_item_text_size">18sp</dimen>
+    <dimen name="menu_list_item_padding_top">4dp</dimen>
+    <dimen name="menu_list_item_padding_bottom">4dp</dimen>
+    <dimen name="menu_list_item_padding_left">32dp</dimen>
+    <dimen name="menu_list_item_padding_right">32dp</dimen>
+
 </resources>

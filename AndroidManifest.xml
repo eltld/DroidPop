@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.droidpop"
     android:versionCode="1"
@@ -5,35 +6,34 @@
 
     <uses-sdk
         android:minSdkVersion="15"
-        android:targetSdkVersion="17" />
-    
+        android:targetSdkVersion="19" />
+
     <!-- launcher config -->
     <uses-permission android:name="com.android.launcher.permission.INSTALL_SHORTCUT" />
-    
+
     <!-- main feature -->
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
-    
+
     <!-- network -->
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
-    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
-    <uses-permission android:name="android.permission.INTERNET"/>
-    
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <!-- external storage -->
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    
+
     <!-- feedback -->
-    <uses-permission android:name="android.permission.VIBRATE"/>
+    <uses-permission android:name="android.permission.VIBRATE" />
 
     <application
         android:allowBackup="true"
-        android:debuggable="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
-       
-
         <activity
-            android:name=".activity.MainActivity" >
+            android:name="com.droidpop.activity.MainActivity"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustPan" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -41,8 +41,7 @@
             </intent-filter>
         </activity>
 
-        <service android:name=".service.ScreenCoordsService" />
-        
+        <service android:name="com.droidpop.service.ScreenCoordsService" />
     </application>
 
 </manifest>

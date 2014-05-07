@@ -1,6 +1,5 @@
 package com.droidpop.view;
 
-import me.wtao.utils.ScreenMetrics;
 import me.wtao.view.FloatingView;
 import me.wtao.view.Hotspot;
 import me.wtao.view.Hotspot.OnHotspotListener;
@@ -23,6 +22,8 @@ public class WordCapLockView extends FloatingView {
 	public WordCapLockView(Context context) {
 		super(context);
 		
+		mScreenMetrics.setPhysicalScreenMode();
+		
 		LayoutInflater inflater = LayoutInflater.from(context);
 		mContainer = (RelativeLayout)inflater.inflate(R.layout.layout_glow_pad_view, this);
 		mGlowPadView = (GlowPadView) mContainer.findViewById(R.id.glow_pad_view);
@@ -31,7 +32,7 @@ public class WordCapLockView extends FloatingView {
 		mHotBottom.setGravity(Hotspot.EDGE_BOTTOM);
 		mHotBottom.setPhysicalScreenMode();
 		mHotBottom.setHotspotWidth(WindowManager.LayoutParams.MATCH_PARENT);
-		mHotBottom.setHotspotHeight(ScreenMetrics.getMeasuredStatusBarHeight() / 2);
+		mHotBottom.setHotspotHeight(mScreenMetrics.getStatusBarHeight() / 2);
 		
 		mHotBottom.setOnHotspotListener(new OnHotspotListener() {
 			
@@ -78,7 +79,7 @@ public class WordCapLockView extends FloatingView {
 			sWindowManager.updateViewLayout(this, mWindowParams);
 		}
 
-		super.onLayout(changed, l, t, r, ScreenMetrics.getResolutionY());
+		super.onLayout(changed, l, t, r, mScreenMetrics.getResolutionY());
 	}
 	
 	@Override
@@ -100,11 +101,8 @@ public class WordCapLockView extends FloatingView {
 	}
 	
 	private void requestMessure() {
-		ScreenMetrics metrics = new ScreenMetrics(this);
-		metrics.setPhysicalScreenMode();
-		metrics.requestMessure();
-
-		mWindowParams.height = ScreenMetrics.getResolutionY();
+		mScreenMetrics.messure();
+		mWindowParams.height = mScreenMetrics.getResolutionY();
 	}
 
 }

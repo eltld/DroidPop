@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bule_light" >
+
+    <com.droidpop.view.MenuListView
+        android:id="@+id/menu_list"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:groupIndicator="@null"
+        android:paddingBottom="@dimen/menu_list_padding_bottom"
+        android:paddingTop="@dimen/menu_list_padding_top" />
+
+</RelativeLayout>

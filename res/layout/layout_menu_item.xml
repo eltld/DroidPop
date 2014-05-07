@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/menu_item"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_menu_button_item"
+    android:gravity="center"
+    android:paddingBottom="@dimen/menu_list_item_padding_bottom"
+    android:paddingLeft="@dimen/menu_list_item_padding_left"
+    android:paddingRight="@dimen/menu_list_item_padding_right"
+    android:paddingTop="@dimen/menu_list_item_padding_top"
+    android:textColor="@color/taupe"
+    android:textSize="@dimen/menu_list_item_text_size" />

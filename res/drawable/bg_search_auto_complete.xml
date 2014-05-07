@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <item>
+        <shape>
+            <solid android:color="@android:color/transparent" />
+
+            <stroke
+                android:width="@dimen/search_auto_complete_stroke_width"
+                android:color="@color/bule_light" />
+        </shape>
+    </item>
+
+</layer-list>

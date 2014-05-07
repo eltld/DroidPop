@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical" >
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/taupe" >
+
+            <include layout="@layout/layout_search" />
+        </FrameLayout>
+
+        <ListView
+            android:id="@+id/recent_query_list"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:divider="@null"
+            android:dividerHeight="@dimen/recent_query_list_divider_height" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/no_content_prompt_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:gravity="center"
+        android:text="@string/no_content"
+        android:textColor="@color/gray"
+        android:textSize="@dimen/main_activity_no_content_text_size"
+        android:textStyle="bold" />
+
+</RelativeLayout>

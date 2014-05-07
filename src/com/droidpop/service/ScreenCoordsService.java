@@ -36,7 +36,7 @@ public class ScreenCoordsService extends Service {
 	private static final boolean sPerformanceAccelerate = true;
 	
 	private WeakReference<NativeEventParserDaemon> mDaemonRef;
-	private ArrayList<WeakReference<OnScreenTouchListener>> mOnScreenTouchListeners;
+	private ArrayList<OnScreenTouchListener> mOnScreenTouchListeners;
 	private SystemOverlayView mOverlayView;
 	private Binder mLocalBinder;
 	
@@ -53,9 +53,9 @@ public class ScreenCoordsService extends Service {
 			mDaemonRef.get().start();
 		}
 		
-		mOnScreenTouchListeners = new ArrayList<WeakReference<OnScreenTouchListener>>();
+		mOnScreenTouchListeners = new ArrayList<OnScreenTouchListener>();
 		
-		mOverlayView = new SystemOverlayView(this);
+		mOverlayView = SystemOverlayView.getInstance(this);
 		
 		Assert.assertTrue(mOverlayView.getClass().getCanonicalName()
 				+ " should implements "
@@ -100,13 +100,23 @@ public class ScreenCoordsService extends Service {
 	}
 	
 	// native
-	public void addOnScreenTouchListener(OnScreenTouchListener listener) {
-		if (listener instanceof OnScreenTouchListener) {
+	public boolean addOnScreenTouchListener(OnScreenTouchListener listener) {
+		if (listener != null && listener instanceof OnScreenTouchListener) {
 			synchronized (mOnScreenTouchListeners) {
-				mOnScreenTouchListeners
-						.add(new WeakReference<OnScreenTouchListener>(listener));
+				return mOnScreenTouchListeners.add(listener);
 			}
+		} else {
+			return false;
 		}
+	}
+	
+	// native
+	public boolean removeOnScreenTouchListener(OnScreenTouchListener listener) {
+		if(listener == null) {
+			return false;
+		}
+		
+		return mOnScreenTouchListeners.remove(listener);
 	}
 	
 	// native
@@ -129,18 +139,8 @@ public class ScreenCoordsService extends Service {
 		
 		Log.d(TAG, Thread.currentThread());
 		synchronized (mOnScreenTouchListeners) {
-			ArrayList<WeakReference<OnScreenTouchListener>> invalied = 
-					new ArrayList<WeakReference<OnScreenTouchListener>>();
-			for(WeakReference<OnScreenTouchListener> listener : mOnScreenTouchListeners) {
-				if(listener.get() == null) {
-					invalied.add(listener);
-				} else {
-					listener.get().onScreenTouch(event);
-				}
-			}
-			
-			if (!invalied.isEmpty()) {
-				mOnScreenTouchListeners.removeAll(invalied);
+			for(OnScreenTouchListener listener : mOnScreenTouchListeners) {
+				listener.onScreenTouch(event);
 			}
 		}
 		
@@ -394,18 +394,18 @@ public class ScreenCoordsService extends Service {
 //				resolution[AXIS_X] = resolution[AXIS_Y];
 //				resolution[AXIS_Y] = px;
 //			}
-//			
-//			ScreenCoordsService service = mServiceRef.get();
-//			if(service != null) {
-//				ScreenMetrics metrics = new ScreenMetrics(service);
-//				mOrientation = metrics.getOrientation();
-//			}
 			
-			int resolution[] = { ScreenMetrics.getResolutionX(),
-					ScreenMetrics.getResolutionY() };
-			init(resolution);
-			
-			super.start();
+			ScreenCoordsService service = mServiceRef.get();
+			if(service != null) {
+				ScreenMetrics metrics = new ScreenMetrics(service);
+				int resolution[] = { metrics.getResolutionX(),
+						metrics.getResolutionY() };
+				init(resolution);
+
+				super.start();
+			} else {
+				Log.w(TAG, "start failed.");
+			}
 		}
 		
 		@Override

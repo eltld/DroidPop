@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_recent_query_item"
+    android:orientation="vertical" >
+
+    <TextView
+        android:id="@+id/word"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingBottom="@dimen/word_entry_padding_bottom"
+        android:paddingLeft="@dimen/word_entry_padding_left"
+        android:paddingRight="@dimen/word_entry_padding_right"
+        android:paddingTop="@dimen/word_entry_padding_top"
+        android:singleLine="true"
+        android:text="text"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:textColor="@android:color/holo_blue_light" />
+
+    <TextView
+        android:id="@+id/basic_paraphrase"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingBottom="@dimen/word_entry_basic_paraphrase_padding_bottom"
+        android:paddingLeft="@dimen/word_entry_basic_paraphrase_padding_left"
+        android:paddingRight="@dimen/word_entry_basic_paraphrase_padding_right"
+        android:paddingTop="@dimen/word_entry_basic_paraphrase_padding_top"
+        android:text="test and not translate yet"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textColor="@color/taupe" />
+
+</LinearLayout>

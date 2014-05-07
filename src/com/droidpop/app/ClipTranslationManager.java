@@ -24,6 +24,7 @@ import com.droidpop.dict.Translator;
 import com.droidpop.dict.WordCategory;
 import com.droidpop.dict.WordEntry;
 import com.droidpop.dict.WordEntry.Paraphrase;
+import com.droidpop.dict.wordnet.WordNetTranslator;
 import com.droidpop.dict.youdao.YouDaoTranslator;
 import com.droidpop.view.OnScreenTouchListener;
 
@@ -307,7 +308,7 @@ public class ClipTranslationManager implements ServiceManager, ClipboardManager.
 				.getSystemService(Context.CLIPBOARD_SERVICE);
 		mListeners = new ArrayList<OnClipTranslationListener>();
 		
-		mTranslator = new YouDaoTranslator();
+		mTranslator = new WordNetTranslator(context); // TODO:
 	}
 	
 	private synchronized void doTranslation() {

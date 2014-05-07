@@ -4,14 +4,13 @@ import java.util.Locale;
 
 import android.content.Context;
 
-import com.droidpop.dict.WordEntryReader;
 import com.droidpop.dict.offline.AbstractDBHelper;
 import com.droidpop.dict.offline.OfflineTranslator;
 
 public class WordNetTranslator extends OfflineTranslator {
 
-	public WordNetTranslator(Context context, WordEntryReader reader) {
-		super(context, reader);
+	public WordNetTranslator(Context context) {
+		super(context, new WordNetDBHelper(context));
 	}
 	
 	@Override
