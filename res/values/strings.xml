@@ -3,9 +3,23 @@
 
     <string name="app_name">DroidPop</string>
     <string name="title_activity_main">MainActivity</string>
+    <string name="action_search">Search</string>
     <string name="action_settings">Settings</string>
+    
     <string name="no_content">No Content</string>
+    
+    <!-- Exit Prompt -->
+    <string name="exit_using_back_title">DroidPop says, shoud I stay?</string>
+    <string name="exit_using_back_message">It runs quietly and No bother unless you need translate again.</string>
+    <string name="exit_positive_button_prompt">Sounds OK</string>
+    <string name="exit_negative_button_prompt">Nope</string>
 
+    <!-- Tips Prompt -->
+    <string name="tip_using_back_title">Hey, DroidPop can do more</string>
+    <string name="tip_using_back_message">Hmm&#8230; I guess we can enable OCR to translate any word we double-click it. Why not try?</string>
+    <string name="tip_positive_button_prompt">Oh Yeah!</string>
+    <string name="tip_negative_button_prompt">Maybe Next</string>
+    
     <!-- content description -->
     <string name="close">close</string>
     <string name="word_entry">word</string>

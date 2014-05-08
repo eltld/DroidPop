@@ -125,7 +125,7 @@ public class SlideDockView extends FloatingView {
 				QuickSettingController.Status status = (QuickSettingController.Status) v.getTag(KEY_QUICK_SETTING_STATUS);
 				status = mController.onOptionsItemSelected(itemHolder.actionId, status);
 				v.setTag(KEY_QUICK_SETTING_STATUS, status);
-				if ((itemHolder.actionId & QuickSettingController.ACTION_SETTING) == QuickSettingController.ACTION_SETTING) {
+				if ((itemHolder.actionId & QuickSettingController.ACTION_FEATURE) == QuickSettingController.ACTION_FEATURE) {
 					TextView tv = (TextView) v.findViewById(R.id.menu_item);
 					switch (itemHolder.actionId) {
 					case QuickSettingController.ACTION_CLIP_TRANSLATE:

@@ -132,7 +132,7 @@ public class ControlCenter implements QuickSettingController {
 		
 		List<MenuItemHolder> itemHolders = new ArrayList<MenuListAdapter.MenuItemHolder>();
 		itemHolders.add(new MenuItemHolder(ACTION_CLIP_TRANSLATE, R.drawable.ic_action_clip_translate, "Clip Translate"));
-		itemHolders.add(new MenuItemHolder(ACTION_OCR_TRANSLATE, R.drawable.ic_action_ocr_translate, "OCR Translate"));
+		itemHolders.add(new MenuItemHolder(ACTION_OCR_TRANSLATE, R.drawable.ic_action_search_light, "OCR Translate"));
 		itemHolders.add(new MenuItemHolder(ACTION_LOCK_SCREEN, R.drawable.ic_action_lock_screen_portrait, "Lock Screen"));
 		itemHolders.add(new MenuItemHolder(ACTION_SHOW_TOUCHES, R.drawable.ic_action_show_touches_on, "Show Touches"));
 		childItems.put(groupItems.get(0), itemHolders);

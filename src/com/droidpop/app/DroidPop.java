@@ -92,7 +92,7 @@ public class DroidPop {
 	public void createShortcut(boolean force) {
 		if(force || !PreferenceSettingsManager.hasCreatedShotcut()) {
 			final String appName = mContext.getResources().getString(R.string.app_name);
-			final int iconId = R.drawable.ic_launcher;
+			final int iconId = R.drawable.ic_logo;
 			LauncherShortcut.createShortcutFor(mActivity, appName, iconId);
 			PreferenceSettingsManager.set(PreferenceSettingsManager.SHOTCUT, true);
 		}
