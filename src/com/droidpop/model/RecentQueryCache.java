@@ -31,11 +31,6 @@ public class RecentQueryCache {
 	public static synchronized RecentQueryCache getRecentQueryCache(Context context) {
 		if(null == sRecentQueryCache) {
 			sRecentQueryCache = new RecentQueryCache(context);
-			
-			// TODO: test
-			RecentQuery test = new RecentQuery(System.currentTimeMillis(), "test", null);
-			sRecentQueryCache.mContainer.add(test);
-			sRecentQueryCache.mContainer.add(test);
 		}
 		
 		return sRecentQueryCache;
@@ -51,6 +46,10 @@ public class RecentQueryCache {
 		} catch (IndexOutOfBoundsException e) {
 			return null;
 		}
+	}
+	
+	public boolean addRecentItem(RecentQuery item) {
+		return mContainer.add(item);
 	}
 	
 	private RecentQueryCache(Context context) {

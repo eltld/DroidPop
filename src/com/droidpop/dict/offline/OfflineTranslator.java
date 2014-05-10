@@ -1,7 +1,8 @@
 package com.droidpop.dict.offline;
 
-import me.wtao.utils.Log;
+import java.util.List;
 
+import me.wtao.utils.Log;
 import android.content.Context;
 
 import com.droidpop.dict.Translator;
@@ -9,6 +10,10 @@ import com.droidpop.dict.WordEntry;
 import com.droidpop.dict.WordEntryReader;
 
 public abstract class OfflineTranslator extends Translator {
+	
+	public enum Vocabulary {
+		ALL, WORD
+	}
 	
 	private static final String TAG = "OfflineTranslator";
 	
@@ -55,6 +60,10 @@ public abstract class OfflineTranslator extends Translator {
 	@Override
 	public boolean isDefualtAutoDetect() {
 		return true;
+	}
+	
+	public List<String> getVocabularyBy(Vocabulary flag) {
+		return mDbHelper.getColumnOfWord(0);
 	}
 	
 	protected abstract AbstractDBHelper getDbHelper();

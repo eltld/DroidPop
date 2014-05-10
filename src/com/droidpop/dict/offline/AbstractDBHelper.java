@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.List;
 
 import me.wtao.io.ExternalStorage;
 import me.wtao.io.FileUtils;
@@ -32,6 +33,41 @@ public abstract class AbstractDBHelper implements WordEntryReader {
 		mContext = context;
 		mPath = getDBFilePath();
 		mQuerySql = null;
+	}
+	
+	/**
+	 * 
+	 * @param flag not used but reserved
+	 * @return
+	 */
+	public List<String> getColumnOfWord(int flag) {
+		try {
+			SQLiteDatabase db = SQLiteDatabase.openDatabase(
+					mPath, null,
+					SQLiteDatabase.OPEN_READONLY);
+			if (db.isOpen()) {
+				try {
+					Cursor cursor = db.query(
+							OfflineDBMetadata.Word.TABLE_NAME_WORD,
+							new String[] { OfflineDBMetadata.Word.COLUMN_WORD },
+							"", null, null, null, null);
+					if (cursor.moveToFirst()) {
+						ArrayList<String> vocabulary = new ArrayList<String>();
+						int idxOfWord = cursor.getColumnIndex(OfflineDBMetadata.Word.COLUMN_WORD);
+						do {
+							vocabulary.add(cursor.getString(idxOfWord));
+						} while(cursor.moveToNext());
+						return vocabulary;
+					}
+				} finally {
+					db.close();
+				}
+			}
+		} catch (Exception e) {
+
+		}
+
+		return null;
 	}
 	
 	public int getWordId(String text) {

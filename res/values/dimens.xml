@@ -34,10 +34,14 @@
     <dimen name="recent_query_list_divider_height">1dp</dimen>
     <dimen name="recent_query_list_item_margin">4dp</dimen>
     
+    <dimen name="word_entry_margin">16dp</dimen>
+    <dimen name="word_entry_padding">8dp</dimen>
     <dimen name="word_entry_padding_top">4dp</dimen>
     <dimen name="word_entry_padding_bottom">2dp</dimen>
     <dimen name="word_entry_padding_left">16dp</dimen>
     <dimen name="word_entry_padding_right">8dp</dimen>
+    
+    <dimen name="word_text_size">32sp</dimen>
     
     <dimen name="word_entry_basic_paraphrase_padding_top">2dp</dimen>
     <dimen name="word_entry_basic_paraphrase_padding_bottom">4dp</dimen>

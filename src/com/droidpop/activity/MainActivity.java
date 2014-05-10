@@ -5,14 +5,20 @@ import java.util.HashMap;
 import java.util.List;
 
 import me.wtao.utils.Log;
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentStatePagerAdapter;
+import android.support.v4.view.ViewPager;
+import android.support.v4.view.ViewPager.OnPageChangeListener;
 import android.support.v4.widget.DrawerLayout;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -21,37 +27,50 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.AdapterView;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.ExpandableListView;
-import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.TextView.OnEditorActionListener;
 
 import com.droidpop.R;
+import com.droidpop.activity.RecentQueryListFragment.OnItemClickListener;
 import com.droidpop.app.DroidPop;
 import com.droidpop.config.FontFactory;
 import com.droidpop.config.FontFactory.Font;
 import com.droidpop.controller.SettingController;
+import com.droidpop.dict.WordEntry;
+import com.droidpop.dict.offline.OfflineTranslator.Vocabulary;
+import com.droidpop.dict.wordnet.WordNetTranslator;
+import com.droidpop.model.AutoCompleteAdapter;
 import com.droidpop.model.MenuListAdapter;
 import com.droidpop.model.MenuListAdapter.MenuItemHolder;
-import com.droidpop.model.RecentQueryListAdapter;
+import com.droidpop.model.RecentQueryCache;
+import com.droidpop.model.RecentQueryCache.RecentQuery;
 
-public class MainActivity extends Activity implements SettingController {
+public class MainActivity extends FragmentActivity implements
+		SettingController, OnItemClickListener, OnPageChangeListener {
 	
 	private static final String TAG = "MainActivity";
 	
 	private Typeface mExistencefont;
 	private Typeface mRobotoLightFont;
 	
+	private InputMethodManager mInputMethodManager;
+	private RecentQueryCache mRecentQueryCache;
+	
 	private Dialog mExitPromptDialog;
+	
+	private ViewPager mFragmentPager;
+	private TwoPanelPagerAdapter mFragmentPagerAdapter;
 	
 	private DrawerLayout mSlideMenuLayout;
 	private MenuListAdapter mMenuListAdapter;
 	private ExpandableListView mMenuListView;
 	
 	private AutoCompleteTextView mSearchView;
-	private ListView mRcentQueryListView;
-	private TextView mNoContentView;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -65,22 +84,54 @@ public class MainActivity extends Activity implements SettingController {
 		setupActionBar();
 		setupMenuListAdapter();
 		
+		mRecentQueryCache = RecentQueryCache.getRecentQueryCache(this);
+		
+		mFragmentPager = (ViewPager) findViewById(R.id.fragment_pager);
+		mFragmentPagerAdapter = new TwoPanelPagerAdapter(getSupportFragmentManager());
+		mFragmentPager.setAdapter(mFragmentPagerAdapter);
+		
 		mSlideMenuLayout = (DrawerLayout) findViewById(R.id.slide_menu);
 		
 		mMenuListView = (ExpandableListView) findViewById(R.id.menu_list);
 		mMenuListView.setAdapter(mMenuListAdapter);
-		
-		mRcentQueryListView = (ListView) findViewById(R.id.recent_query_list);
-		mRcentQueryListView.setAdapter(new RecentQueryListAdapter(this));
-		
-		mNoContentView = (TextView) findViewById(R.id.no_content_prompt_view);
-		mNoContentView.setTypeface(mExistencefont);
 	}
 	
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		MenuInflater inflater = getMenuInflater();
 		inflater.inflate(R.menu.main_activity_actions, menu);
+		
+		MenuItem item =  menu.findItem(R.id.action_search);
+		mSearchView = (AutoCompleteTextView) item.getActionView().findViewById(R.id.search_auto_complete);
+		mSearchView.setCursorVisible(true);
+		mSearchView.setTypeface(mRobotoLightFont);
+		
+		final WordNetTranslator translator = new WordNetTranslator(this);
+		List<String> words = translator.getVocabularyBy(Vocabulary.WORD);
+		if(words != null) {
+			AutoCompleteAdapter adapter = new AutoCompleteAdapter(this,
+					R.layout.layout_auto_complete_item, R.id.auto_complete_word,
+					words);
+			mSearchView.setAdapter(adapter);
+		}
+		
+		mSearchView.setOnEditorActionListener(new OnEditorActionListener() {
+			
+			@Override
+			public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+				final Context context = v.getContext();
+				String query = v.getText().toString();
+				WordEntry entry = translator.translte(query);
+				RecentQuery recentItem = new RecentQuery(System.currentTimeMillis(), query, entry);
+				RecentQueryCache.getRecentQueryCache(context).addRecentItem(recentItem);
+				
+				clearImeStatus(v);
+				showDetail(recentItem, true);
+				
+				return false;
+			}
+		});
+		
 		return super.onCreateOptionsMenu(menu);
 	}
 	
@@ -88,6 +139,7 @@ public class MainActivity extends Activity implements SettingController {
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case R.id.action_search:
+			
 			break;
 
 		case R.id.action_settings:
@@ -115,6 +167,30 @@ public class MainActivity extends Activity implements SettingController {
 		return super.onKeyDown(keyCode, event);
 	}
 	
+	@Override
+	public void onPageScrollStateChanged(int state) {
+		
+	}
+
+	@Override
+	public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+		
+	}
+
+	@Override
+	public void onPageSelected(int position) {
+		if(TwoPanelPagerAdapter.FRAGMENT_WORD_ENTRY_DETAIL == position) {
+			
+		}
+	}
+
+	@Override
+	public void onItemClick(AdapterView<?> parent, View view, int position,
+			long id) {
+		RecentQuery recentItem = mRecentQueryCache.getRecentQueryByIndex(position);
+		showDetail(recentItem, true);
+	}
+
 	private void initFont() {
 		FontFactory factory = new FontFactory(this);
 		mExistencefont = factory.buildFont(Font.EXISTENCE);
@@ -241,6 +317,57 @@ public class MainActivity extends Activity implements SettingController {
 		} else {
 			mSlideMenuLayout.openDrawer(Gravity.RIGHT);
 		}
+	}
+	
+	private void showDetail(RecentQuery recentItem, boolean smoothScroll) {
+		if(null != recentItem && null != recentItem.result) {
+			mFragmentPagerAdapter.setWordEntry(recentItem.result);
+			mFragmentPager.setCurrentItem(TwoPanelPagerAdapter.FRAGMENT_WORD_ENTRY_DETAIL, smoothScroll);
+		}
+	}
+	
+	private void clearImeStatus(View v) {
+		v.clearFocus();
+		
+		if (mInputMethodManager == null) {
+			mInputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+		}
+		mInputMethodManager.hideSoftInputFromWindow(v.getWindowToken(), 0);
+	}
+	
+	private class TwoPanelPagerAdapter extends FragmentStatePagerAdapter {
+
+		public static final int FRAGMENT_RECNET_QUERY_LIST = 0;
+		public static final int FRAGMENT_WORD_ENTRY_DETAIL = 1;
+		private static final int FRAGMENT_PAGER_COUNT = 2;
+		
+		private RecentQueryListFragment mRecnetQueryListFragment;
+		private WordEntryDetailFragment mWordEntryDetailFragment;
+
+		public TwoPanelPagerAdapter(FragmentManager fm) {
+			super(fm);
+			mRecnetQueryListFragment = new RecentQueryListFragment();
+			mWordEntryDetailFragment = new WordEntryDetailFragment();
+		}
+		
+		public void setWordEntry(WordEntry entry) {
+			mWordEntryDetailFragment.setWordEntry(entry);
+		}
+
+		@Override
+		public Fragment getItem(int position) {
+			if (FRAGMENT_RECNET_QUERY_LIST == position) {
+				return mRecnetQueryListFragment;
+			} else {
+				return mWordEntryDetailFragment;
+			}
+		}
+
+		@Override
+		public int getCount() {
+			return FRAGMENT_PAGER_COUNT;
+		}
+
 	}
 
 }
