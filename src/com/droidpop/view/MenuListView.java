@@ -10,14 +10,17 @@ public class MenuListView extends ExpandableListView {
 
 	public MenuListView(Context context, AttributeSet attrs, int defStyle) {
 		super(context, attrs, defStyle);
+		init();
 	}
 
 	public MenuListView(Context context, AttributeSet attrs) {
 		super(context, attrs);
+		init();
 	}
 
 	public MenuListView(Context context) {
 		super(context);
+		init();
 	}
 
 	@Override
@@ -28,7 +31,9 @@ public class MenuListView extends ExpandableListView {
 		for (int groupPos = 0; groupPos != size; ++groupPos) {
 			expandGroup(groupPos);
 		}
-
+	}
+	
+	private void init() {
 		setOnGroupClickListener(new OnGroupClickListener() {
 
 			@Override

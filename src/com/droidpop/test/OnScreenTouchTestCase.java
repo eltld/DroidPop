@@ -29,7 +29,7 @@ public class OnScreenTouchTestCase implements TestCase, OnScreenTouchListener {
 	
 	@Override
 	public void setUp() {
-		DroidPop app = DroidPop.getApplication();
+		DroidPop app = DroidPop.APPLICATION;
 		ScreenCoordsManager mgr = (ScreenCoordsManager) app
 				.getAppService(DroidPop.SCREEN_COORDS_SERVICE);
 		mgr.addOnScreenTouchListener(this);
@@ -37,7 +37,7 @@ public class OnScreenTouchTestCase implements TestCase, OnScreenTouchListener {
 
 	@Override
 	public void tearDown() {
-		DroidPop app = DroidPop.getApplication();
+		DroidPop app = DroidPop.APPLICATION;
 		app.stopService(DroidPop.SCREEN_COORDS_SERVICE);
 	}
 	

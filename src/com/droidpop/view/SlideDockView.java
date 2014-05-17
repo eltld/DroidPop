@@ -1,13 +1,16 @@
 package com.droidpop.view;
 
 import me.wtao.utils.ScreenMetrics;
+import me.wtao.utils.ViewUtils;
 import me.wtao.view.FloatingView;
 import me.wtao.view.Hotspot;
 import me.wtao.view.Hotspot.OnHotspotListener;
 import android.content.Context;
 import android.graphics.Typeface;
-import android.support.v4.widget.DrawerLayout;
+import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout.DrawerListener;
+import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -20,34 +23,49 @@ import android.widget.ExpandableListView.OnChildClickListener;
 import android.widget.ExpandableListView.OnGroupClickListener;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.TextView.OnEditorActionListener;
 
 import com.droidpop.R;
+import com.droidpop.config.FontFactory;
+import com.droidpop.config.FontFactory.Font;
 import com.droidpop.controller.ControlCenter;
 import com.droidpop.controller.QuickSettingController;
 import com.droidpop.controller.SettingController.Status;
+import com.droidpop.dict.WordEntry;
+import com.droidpop.dict.wordnet.WordNetTranslator;
 import com.droidpop.model.MenuListAdapter;
 import com.droidpop.model.MenuListAdapter.MenuItemHolder;
+import com.droidpop.model.RecentQueryCache;
+import com.droidpop.model.RecentQueryCache.RecentQuery;
+import com.droidpop.model.SlidePagerAdapter;
+import com.droidpop.view.MenuDrawerLayout.OnInterceptTouchEventListener;
 
 public class SlideDockView extends FloatingView {
 	
 	private static final String TAG = "SlideDockView";
-
-	private final Typeface mQueryfont;
+	
+	private final Typeface mRobotoLightfont;
 	private ScreenMetrics mScreenMetrics;
 	
 	private QuickSettingController mController;
 	private InputMethodManager mInputMethodManager;
 	
 	private RelativeLayout mContainer;
-	private DrawerLayout mSlidingLayout;
-	private AutoCompleteTextView mQueryView;
+	private MenuDrawerLayout mSlidingLayout;
+	private AutoCompleteTextView mSearchView;
+	
+	private TextView mTitleView;
+	private ViewPager mDetailPager;
+	private SlidePagerAdapter mDetailPagerAdapter;
+	
 	private ExpandableListView mMenuListView;
 	private Hotspot mHotSide;
 	
 	public SlideDockView(Context context) {
 		super(context);
 
-		mQueryfont = Typeface.createFromAsset(context.getAssets(), "fonts/Roboto-Light.ttf");
+		FontFactory factory = new FontFactory(context);
+		mRobotoLightfont = factory.buildFont(Font.ROBOTO_LIGHT);
 		mScreenMetrics = new ScreenMetrics(context);
 		
 		mController = ControlCenter.getInstance(context);
@@ -55,7 +73,7 @@ public class SlideDockView extends FloatingView {
 		LayoutInflater inflater = LayoutInflater.from(context);
 		mContainer = (RelativeLayout)inflater.inflate(R.layout.layout_slide_dock_view, this);
 		
-		mSlidingLayout = (DrawerLayout) mContainer.findViewById(R.id.slide_dock_view);
+		mSlidingLayout = (MenuDrawerLayout) mContainer.findViewById(R.id.slide_dock_view);
 		mSlidingLayout.setDrawerListener(new DrawerListener() {
 			
 			@Override
@@ -79,10 +97,23 @@ public class SlideDockView extends FloatingView {
 				setTouchable(false);
 			}
 		});
+		mSlidingLayout.setOnInterceptTouchEventListener(new OnInterceptTouchEventListener() {
+			
+			@Override
+			public boolean shouldInterceptTouchEvent(MotionEvent event) {
+				if(mSlidingLayout.isDrawerOpen(Gravity.RIGHT)) {
+					if(ViewUtils.isOnTouch(mSlidingLayout, mDetailPager, (int)event.getX(), (int)event.getY())) {
+						return true;
+					}
+				}
+				
+				return false;
+			}
+		});
 		
-		mQueryView = (AutoCompleteTextView) mSlidingLayout.findViewById(R.id.search_auto_complete);
-		mQueryView.setTypeface(mQueryfont);
-		mQueryView.setOnFocusChangeListener(new OnFocusChangeListener() {
+		mSearchView = (AutoCompleteTextView) mSlidingLayout.findViewById(R.id.search_auto_complete);
+		mSearchView.setTypeface(mRobotoLightfont);
+		mSearchView.setOnFocusChangeListener(new OnFocusChangeListener() {
 			
 			@Override
 			public void onFocusChange(View v, boolean hasFocus) {
@@ -91,15 +122,44 @@ public class SlideDockView extends FloatingView {
 			}
 		});
 		
+		final WordNetTranslator translator = new WordNetTranslator(getContext());
+		mSearchView.setOnEditorActionListener(new OnEditorActionListener() {
+
+			@Override
+			public boolean onEditorAction(TextView v, int actionId,
+					KeyEvent event) {
+				final Context context = v.getContext();
+				String query = v.getText().toString();
+				WordEntry entry = translator.translte(query);
+				RecentQuery recentItem = new RecentQuery(System
+						.currentTimeMillis(), query, entry);
+				RecentQueryCache.getRecentQueryCache(context).addRecentItem(
+						recentItem);
+
+				clearImeStatus();
+				setWordEntry(recentItem.result);
+
+				return false;
+			}
+			
+			public void setWordEntry(WordEntry entry) {
+				if (entry != null && entry.isValid()) {
+					mTitleView.setText(entry.getWord());
+					mDetailPagerAdapter.setParaphrases(entry.getParaphrases());
+				}
+			}
+		});
+		
+		mTitleView = (TextView) mSlidingLayout.findViewById(R.id.word);
+		mTitleView.setTypeface(mRobotoLightfont);
+		
+		mDetailPager = (ViewPager) mSlidingLayout.findViewById(R.id.paraphrase);
+		mDetailPagerAdapter = new SlidePagerAdapter(context);
+		mDetailPager.setAdapter(mDetailPagerAdapter);
+		
 		mMenuListView = (ExpandableListView) mSlidingLayout.findViewById(R.id.menu_list);
 		final MenuListAdapter adapter = mController.getMenuListAdapter();
 		mMenuListView.setAdapter(adapter);
-		
-		int size = adapter.getGroupCount();
-		for (int groupPos = 0; groupPos != size; ++groupPos) {
-			mMenuListView.expandGroup(groupPos);
-		}
-		
 		mMenuListView.setOnGroupClickListener(new OnGroupClickListener() {
 
 			@Override
@@ -108,7 +168,6 @@ public class SlideDockView extends FloatingView {
 				// neither collapse nor expand
 				
 				clearImeStatus();
-				
 				return true;
 			}
 		});
@@ -254,7 +313,7 @@ public class SlideDockView extends FloatingView {
 	}
 	
 	private void clearImeStatus() {
-		mQueryView.clearFocus();
+		mSearchView.clearFocus();
 		
 		if (mInputMethodManager == null) {
 			mInputMethodManager = (InputMethodManager) getContext()

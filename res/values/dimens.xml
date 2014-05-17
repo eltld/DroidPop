@@ -35,7 +35,7 @@
     <dimen name="recent_query_list_item_margin">4dp</dimen>
     
     <dimen name="word_entry_margin">16dp</dimen>
-    <dimen name="word_entry_padding">8dp</dimen>
+    <dimen name="word_entry_padding">16dp</dimen>
     <dimen name="word_entry_padding_top">4dp</dimen>
     <dimen name="word_entry_padding_bottom">2dp</dimen>
     <dimen name="word_entry_padding_left">16dp</dimen>
@@ -43,10 +43,17 @@
     
     <dimen name="word_text_size">32sp</dimen>
     
+    <dimen name="word_category_text_size">16sp</dimen>
+    <dimen name="word_category_padding">16dp</dimen>
+    
     <dimen name="word_entry_basic_paraphrase_padding_top">2dp</dimen>
     <dimen name="word_entry_basic_paraphrase_padding_bottom">4dp</dimen>
     <dimen name="word_entry_basic_paraphrase_padding_left">16dp</dimen>
     <dimen name="word_entry_basic_paraphrase_padding_right">8dp</dimen>
+    
+    <dimen name="portrait_layout_min_height">192dp</dimen>
+    <dimen name="portrait_image_margin">16dp</dimen>
+    <dimen name="portrait_image_size">96dp</dimen>
     
     <dimen name="menu_list_padding_top">8dp</dimen>
     <dimen name="menu_list_padding_bottom">16dp</dimen>

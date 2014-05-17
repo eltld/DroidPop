@@ -70,7 +70,7 @@ public class OnLongPressTranslationListenerTestCase implements TestCase, OnTouch
 	
 	@Override
 	public void setUp() {
-		DroidPop app = DroidPop.getApplication();
+		DroidPop app = DroidPop.APPLICATION;
 		ClipTranslationManager mgr = (ClipTranslationManager) app
 				.getAppService(DroidPop.CLIP_TRANSLATION_SERVICE);
 		mgr.addOnClipTranslationListener(mTargetListener);
@@ -78,7 +78,7 @@ public class OnLongPressTranslationListenerTestCase implements TestCase, OnTouch
 	
 	@Override
 	public void tearDown() {
-		DroidPop app = DroidPop.getApplication();
+		DroidPop app = DroidPop.APPLICATION;
 		ClipTranslationManager mgr = (ClipTranslationManager) app
 				.getAppService(DroidPop.CLIP_TRANSLATION_SERVICE);
 		mgr.removeOnClipTranslationListener(mTargetListener);

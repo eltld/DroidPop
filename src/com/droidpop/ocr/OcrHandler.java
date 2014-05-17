@@ -64,7 +64,7 @@ public class OcrHandler implements OnScreenTouchListener,
 			
 		});
 		
-		mScreenCapManager = (ScreenCapManager) DroidPop.getApplication()
+		mScreenCapManager = (ScreenCapManager) DroidPop.APPLICATION
 				.getAppService(DroidPop.SCREEN_CAPTURE_SERVICE);
 		mScreenMetrics = new ScreenMetrics(context);
 		
@@ -88,15 +88,15 @@ public class OcrHandler implements OnScreenTouchListener,
 	public void onDone(Bitmap screencap) {
 		logCostMillis("screencap ok");
 		
-		mOcr.recognize(screencap);
+		mOcr.recognize(screencap, mPoint);
 
 		logCostMillis("ocr ok");
 
-		String text = mOcr.getText(mPoint);
+		String text = mOcr.getText();
 		DroidPop.debug(text);
 
 		if(mListener != null) {
-			mListener.onRecognized(text, mOcr.isConfidence());
+			mListener.onRecognized(text, true);
 			logCostMillis("translate ok");
 		}
 	}

@@ -1,8 +1,14 @@
 package com.droidpop.dict;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import com.droidpop.R;
+import com.droidpop.app.DroidPop;
+
+import android.content.Context;
+import android.util.Log;
 import android.util.SparseArray;
 
 public class WordCategory {
@@ -21,7 +27,7 @@ public class WordCategory {
 	public static final int INTERJECTION = 0x20;
 	public static final int NUMBERAL = 0x40;
 	public static final int PREPOSITION = 0x80;
-	public static final int PRONOUN = 0x90;
+	public static final int PRONOUN = 0x100;
 	
 	public static final int NOUN_MASK = 0xf000;
 	public static final int NOUN = 0x1000;
@@ -44,9 +50,17 @@ public class WordCategory {
 	public static final int OTHERS_WEB_ENTRY = 0x04000000;
 	public static final int OTHERS_UNKOWN = 0x05000000;
 
+	private static WordCategory sUniformWordCategory;
 	
 	private final Map<String, Integer> mCategoryMap;
 	private SparseArray<String> mCache;
+	
+	public static synchronized WordCategory getUniformWordCategory(Context context) {
+		if(null == sUniformWordCategory) {
+			sUniformWordCategory = getWordCategoryBy(new UniformWordCategoryConfig(context));
+		}
+		return sUniformWordCategory;
+	}
 	
 	public static WordCategory getWordCategoryBy(WordCategoryConfig config) {
 		return new WordCategory(config);
@@ -97,5 +111,42 @@ public class WordCategory {
 	private WordCategory(WordCategoryConfig config) {
 		mCategoryMap = config.getCategoryMap();
 		mCache = new SparseArray<String>();
+	}
+	
+	private static class UniformWordCategoryConfig implements WordCategoryConfig {
+
+		private final HashMap<String, Integer> mConfigMap;
+		
+		public UniformWordCategoryConfig(Context context) {
+			mConfigMap = new HashMap<String, Integer>();
+			
+			String[] literals = context.getResources().getStringArray(
+					R.array.word_category);
+			int[] categorys = { ABBREVIATION, ADJECTIVE, ADVERB, ARTICLE,
+					CONJUNCTION, INTERJECTION, NUMBERAL, PREPOSITION, PRONOUN,
+
+					NOUN, NOUN_PROPER, NOUN_COUNTABLE, NOUN_UNCOUNTABLE,
+
+					VERB, VERB_AUXILIARY, VERB_MODAL, VERB_TRANSITIVE,
+					VERB_INTRANSITIVE,
+
+					OTHERS_LEXICAL_PHRASE, OTHERS_USAGE, OTHERS_TRANSLATION,
+					OTHERS_WEB_ENTRY, OTHERS_UNKOWN };
+			
+			if(literals.length != categorys.length) {
+				DroidPop.log(DroidPop.LEVEL_WARN, "bad UniformWordCategoryConfig");
+			}
+
+			int len = Math.min(literals.length, categorys.length);
+			for(int i = 0; i != len; ++i) {
+				mConfigMap.put(literals[i], categorys[i]);
+			}
+		}
+		
+		@Override
+		public Map<String, Integer> getCategoryMap() {
+			return mConfigMap;
+		}
+		
 	}
 }

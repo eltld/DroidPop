@@ -2,17 +2,15 @@ package com.droidpop.app;
 
 import java.io.File;
 import java.io.FilenameFilter;
-import java.security.InvalidParameterException;
 
-import junit.framework.Assert;
-import me.wtao.app.LauncherShortcut;
 import me.wtao.utils.Log;
-import android.app.Activity;
+import android.app.Application;
 import android.content.Context;
 
-import com.droidpop.R;
-
-public class DroidPop {
+public class DroidPop extends Application {
+	public static Context APPLICATION_CONTEXT;
+	public static DroidPop APPLICATION;
+	
 	public static final int SCREEN_COORDS_SERVICE = 0;
 	public static final int SCREEN_CAPTURE_SERVICE = 1;
 	public static final int CLIP_TRANSLATION_SERVICE = 2;
@@ -23,79 +21,51 @@ public class DroidPop {
 	public static final int LEVEL_WARN = 3;
 	public static final int LEVEL_ERROR = 4;
 	
-	private volatile static DroidPop sDroidPop = null;
-	private final static Log Log = new Log();
-	static {
-		Log.setOn();	// if turned off, check the lang package at tess2/
-		Log.calibrateIndexOfCaller(4);
-	}
+	private static final String TAG = DroidPop.class.getSimpleName();
 	
-	private final Context mContext;
-	private final Activity mActivity;
-	private final ScreenCoordsManager mScreenCoordsManager;
-	private final ScreenCapManager mScreenCapManager;
-	private final ClipTranslationManager mClipTranslationManager;
+	private Context mContext;
+	private ScreenCoordsManager mScreenCoordsManager;
+	private ScreenCapManager mScreenCapManager;
+	private ClipTranslationManager mClipTranslationManager;
 	
-	public static void initFromLauncherActivity(Context context) {
-		if(sDroidPop == null) {
-			synchronized (DroidPop.class) {
-				if(sDroidPop == null) {
-					sDroidPop = new DroidPop(context);
-					checkLibSupported(context);
-				}
-			}
-		}
-	}
-	
-	public static DroidPop getApplication() {
-		Assert.assertNotNull("MUST initFromLauncherActivity(Context) first", sDroidPop);
+	@Override
+	public void onCreate() {
+		Log.d(TAG, "DroidPop application onCreate...");
 		
-		return sDroidPop;
-	}
-	
-	public static Context getApplicationContext() {
-		return getApplication().getContext();
-	}
-	
-	public static boolean isDebuggable() {
-		return Log.isDebuggable();
+		APPLICATION_CONTEXT = getApplicationContext();
+		APPLICATION = this;
+		checkLibSupported(APPLICATION_CONTEXT);
+		onInitialize(APPLICATION_CONTEXT);
+		
+		super.onCreate();
 	}
 	
 	public static void debug(Object... msg_segs) {
-		Log.debug(msg_segs);
+		Log.d(TAG, msg_segs);
 	}
 	
 	public static void log(int level, Object... msg_segs) {
 		switch (level) {
 		case LEVEL_VERBOSE:
-			Log.vobe(msg_segs);
+			Log.v(TAG, msg_segs);
 			break;
 		case LEVEL_DEBUG:
-			Log.debug(msg_segs);
+			Log.d(TAG, msg_segs);
 			break;
 		case LEVEL_INFO:
-			Log.inform(msg_segs);
+			Log.i(TAG, msg_segs);
 			break;
 		case LEVEL_WARN:
-			Log.warn(msg_segs);
+			Log.w(TAG, msg_segs);
 			break;
 		case LEVEL_ERROR:
-			Log.error(msg_segs);
+			Log.e(TAG, msg_segs);
 			break;
 		}
 	}
 	
 	public Context getContext() {
 		return mContext;
-	}
-	
-	public void createShortcut(boolean force) {
-		if(force || !PreferenceSettingsManager.hasCreatedShotcut()) {
-			final String appName = mContext.getResources().getString(R.string.app_name);
-			final int iconId = R.drawable.ic_logo;
-			LauncherShortcut.createShortcutFor(mActivity, appName, iconId);
-			PreferenceSettingsManager.set(PreferenceSettingsManager.SHOTCUT, true);
-		}
 	}
 	
 	public ServiceManager getAppService(int serviceId) {
@@ -136,15 +106,8 @@ public class DroidPop {
 		mClipTranslationManager.stopService();
 	}
 	
-	private DroidPop(Context context) {
+	private void onInitialize(Context context) {
 		mContext = context.getApplicationContext();
-		if(context instanceof Activity) {
-			mActivity = (Activity) context;
-		} else {
-			final String appName = mContext.getResources().getString(R.string.app_name);
-			Log.warn(appName, " is not initialized from LauncherActivity!");
-			throw new InvalidParameterException("should initialized from LauncherActivity");
-		}
 		
 		mScreenCoordsManager = new ScreenCoordsManager(mContext);
 		mScreenCapManager = new ScreenCapManager(mContext);

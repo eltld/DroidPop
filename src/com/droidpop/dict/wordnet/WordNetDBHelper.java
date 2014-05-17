@@ -3,7 +3,7 @@ package com.droidpop.dict.wordnet;
 import me.wtao.io.ExternalStorage;
 import android.content.Context;
 
-import com.droidpop.app.DroidPop;
+import com.droidpop.config.ApplicationConfig;
 import com.droidpop.dict.offline.AbstractDBHelper;
 
 public class WordNetDBHelper extends AbstractDBHelper {
@@ -16,7 +16,7 @@ public class WordNetDBHelper extends AbstractDBHelper {
 
 	@Override
 	protected String getDBFilePath() {
-		if (DroidPop.isDebuggable() && ExternalStorage.isExternalStorageReadable()) {
+		if (ApplicationConfig.DEBUG && ExternalStorage.isExternalStorageReadable()) {
 			return "/sdcard/droidpop/database/wordnet.db";
 		} else {
 			return mPath;

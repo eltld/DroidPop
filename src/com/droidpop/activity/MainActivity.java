@@ -37,7 +37,7 @@ import android.widget.TextView.OnEditorActionListener;
 
 import com.droidpop.R;
 import com.droidpop.activity.RecentQueryListFragment.OnItemClickListener;
-import com.droidpop.app.DroidPop;
+import com.droidpop.app.ContextUtils;
 import com.droidpop.config.FontFactory;
 import com.droidpop.config.FontFactory.Font;
 import com.droidpop.controller.SettingController;
@@ -49,11 +49,13 @@ import com.droidpop.model.MenuListAdapter;
 import com.droidpop.model.MenuListAdapter.MenuItemHolder;
 import com.droidpop.model.RecentQueryCache;
 import com.droidpop.model.RecentQueryCache.RecentQuery;
+import com.droidpop.view.SlideDockView;
 
 public class MainActivity extends FragmentActivity implements
 		SettingController, OnItemClickListener, OnPageChangeListener {
 	
 	private static final String TAG = "MainActivity";
+	private static SlideDockView sSlideDockView;
 	
 	private Typeface mExistencefont;
 	private Typeface mRobotoLightFont;
@@ -76,13 +78,16 @@ public class MainActivity extends FragmentActivity implements
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		
-		DroidPop.initFromLauncherActivity(this);
-		DroidPop.getApplication().createShortcut(false);
-		
 		setContentView(R.layout.activity_main);
 		initFont();
 		setupActionBar();
 		setupMenuListAdapter();
+		
+		if(null == sSlideDockView) {
+			sSlideDockView = new SlideDockView(getApplicationContext());
+			sSlideDockView.attachedToWindow();
+			sSlideDockView.setEnable();
+		}
 		
 		mRecentQueryCache = RecentQueryCache.getRecentQueryCache(this);
 		
@@ -133,6 +138,12 @@ public class MainActivity extends FragmentActivity implements
 		});
 		
 		return super.onCreateOptionsMenu(menu);
+	}
+	
+	@Override
+	protected void onPause() {
+		ContextUtils.createShortcutForLauncher(this, false);
+		super.onPause();
 	}
 	
 	@Override
@@ -208,38 +219,40 @@ public class MainActivity extends FragmentActivity implements
 	}
 
 	private void setupMenuListAdapter() {
+		TextView contactMeView = (TextView) findViewById(R.id.contact_me);
+		contactMeView.setTypeface(mRobotoLightFont);
+		
 		ArrayList<String> groupItems = new ArrayList<String>();
 		groupItems.add("ONLINE DICTIONARY");
 		groupItems.add("LOCAL DICTIONARY");
 		groupItems.add("FEATURES");
-		groupItems.add("GENERAL");
 		groupItems.add("ABOUT");
+		groupItems.add("APPLICATION");
 		
 		HashMap<String, List<MenuItemHolder>> childItems = new HashMap<String, List<MenuItemHolder>>();
 		
 		List<MenuItemHolder> itemHolders = new ArrayList<MenuListAdapter.MenuItemHolder>();
-		itemHolders.add(new MenuItemHolder(ACTION_YOUDAO_TRANSLATE, R.drawable.ic_action_clip_translate, "YouDao Translate APIv1.0"));
+		itemHolders.add(new MenuItemHolder(ACTION_YOUDAO_TRANSLATE, R.drawable.ic_dict_youdao_light, "YouDao Translate APIv1.0"));
 		childItems.put(groupItems.get(0), itemHolders);
 		
 		itemHolders = new ArrayList<MenuListAdapter.MenuItemHolder>();
-		itemHolders.add(new MenuItemHolder(ACTION_WORDNET_DICTIONARY, R.drawable.ic_action_clip_translate, "WordNet Dictionary"));
+		itemHolders.add(new MenuItemHolder(ACTION_WORDNET_DICTIONARY, R.drawable.ic_shortcuts_notebook_add, "WordNet Dictionary"));
 		childItems.put(groupItems.get(1), itemHolders);
 		
 		itemHolders = new ArrayList<MenuListAdapter.MenuItemHolder>();
 		itemHolders.add(new MenuItemHolder(ACTION_CLIP_TRANSLATE, R.drawable.ic_action_clip_translate, "Clip Translate"));
 		itemHolders.add(new MenuItemHolder(ACTION_OCR_TRANSLATE, R.drawable.ic_action_search_light, "OCR Translate"));
-		itemHolders.add(new MenuItemHolder(ACTION_LOCK_SCREEN, R.drawable.ic_action_lock_screen_portrait, "Lock Screen"));
+		itemHolders.add(new MenuItemHolder(ACTION_SHOW_SLIDE_DOCK, R.drawable.ic_action_lock_screen_portrait, "Show Slide Dock"));
 		itemHolders.add(new MenuItemHolder(ACTION_SHOW_TOUCHES, R.drawable.ic_action_show_touches_on, "Show Touches"));
 		childItems.put(groupItems.get(2), itemHolders);
 		
 		itemHolders = new ArrayList<MenuListAdapter.MenuItemHolder>();
-		itemHolders.add(new MenuItemHolder(ACTION_SHOW_SLIDE_DOCK, R.drawable.ic_action_lock_screen_portrait, "Show Slide Dock"));
-		itemHolders.add(new MenuItemHolder(ACTION_EXIT, R.drawable.ic_action_show_touches_on, "Exit"));
+		itemHolders.add(new MenuItemHolder(ACTION_USAGE_HELP, R.drawable.ic_action_help, "Usage Help"));
+		itemHolders.add(new MenuItemHolder(ACTION_DISCLAIMER, R.drawable.ic_action_about, "Disclaimer"));
 		childItems.put(groupItems.get(3), itemHolders);
 		
 		itemHolders = new ArrayList<MenuListAdapter.MenuItemHolder>();
-		itemHolders.add(new MenuItemHolder(ACTION_USAGE_HELP, R.drawable.ic_action_help, "Usage Help"));
-		itemHolders.add(new MenuItemHolder(ACTION_DISCLAIMER, R.drawable.ic_action_about, "Disclaimer"));
+		itemHolders.add(new MenuItemHolder(ACTION_EXIT, R.drawable.ic_action_show_touches_on, "Exit"));
 		childItems.put(groupItems.get(4), itemHolders);
 		
 		mMenuListAdapter = new MenuListAdapter(this, groupItems, childItems);

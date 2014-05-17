@@ -27,7 +27,7 @@ public class DictManager {
 	}
 
 	private static class SingletonHolder {
-		private static final DictManager INSTANCE = new DictManager(DroidPop.getApplicationContext());
+		private static final DictManager INSTANCE = new DictManager(DroidPop.APPLICATION_CONTEXT);
 	}
 
 }

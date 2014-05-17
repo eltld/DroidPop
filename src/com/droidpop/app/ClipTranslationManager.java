@@ -17,6 +17,7 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.MotionEvent.PointerCoords;
 
+import com.droidpop.config.ApplicationConfig;
 import com.droidpop.dict.TranslationTask;
 import com.droidpop.dict.TranslationTask.OnTranslateListener;
 import com.droidpop.dict.TranslationTask.Status;
@@ -25,7 +26,6 @@ import com.droidpop.dict.WordCategory;
 import com.droidpop.dict.WordEntry;
 import com.droidpop.dict.WordEntry.Paraphrase;
 import com.droidpop.dict.wordnet.WordNetTranslator;
-import com.droidpop.dict.youdao.YouDaoTranslator;
 import com.droidpop.view.OnScreenTouchListener;
 
 public class ClipTranslationManager implements ServiceManager, ClipboardManager.OnPrimaryClipChangedListener {
@@ -44,7 +44,7 @@ public class ClipTranslationManager implements ServiceManager, ClipboardManager.
 					if(sOnScreenLongPressListener == null) {
 						sOnScreenLongPressListener = new OnScreenLongPressListener(context);
 						
-						ScreenCoordsManager mgr = (ScreenCoordsManager) DroidPop.getApplication()
+						ScreenCoordsManager mgr = (ScreenCoordsManager) DroidPop.APPLICATION
 								.getAppService(DroidPop.SCREEN_COORDS_SERVICE);
 						mgr.addOnScreenTouchListener(sOnScreenLongPressListener);
 						
@@ -171,7 +171,7 @@ public class ClipTranslationManager implements ServiceManager, ClipboardManager.
 								TAP_TIMEOUT + LONGPRESS_TIMEOUT);
 					}
 					
-					if(DroidPop.isDebuggable()) {
+					if(ApplicationConfig.DEBUG) {
 						SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.CHINA);
 						Date currentDate = new Date(mCurrentDownEvent.getDownTime());
 						DroidPop.debug("sendEmptyMessageAtTime() ", ((succeeded) ? "succeeded" : "failed")
@@ -335,7 +335,7 @@ public class ClipTranslationManager implements ServiceManager, ClipboardManager.
 			}
 			
 			private void log(WordEntry entry) {
-				if(DroidPop.isDebuggable()) {
+				if(ApplicationConfig.DEBUG) {
 					StringBuilder sb = new StringBuilder();
 					sb.append(entry.getWord());
 					final String NEW_LINE = "\n\t";

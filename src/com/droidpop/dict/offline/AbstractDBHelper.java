@@ -27,6 +27,7 @@ public abstract class AbstractDBHelper implements WordEntryReader {
 
 	protected final Context mContext;
 	protected String mPath;
+	protected SQLiteDatabase mSQLiteDatabase;
 	protected String mQuerySql;
 	
 	public AbstractDBHelper(Context context) {
@@ -42,25 +43,18 @@ public abstract class AbstractDBHelper implements WordEntryReader {
 	 */
 	public List<String> getColumnOfWord(int flag) {
 		try {
-			SQLiteDatabase db = SQLiteDatabase.openDatabase(
-					mPath, null,
-					SQLiteDatabase.OPEN_READONLY);
-			if (db.isOpen()) {
-				try {
-					Cursor cursor = db.query(
-							OfflineDBMetadata.Word.TABLE_NAME_WORD,
-							new String[] { OfflineDBMetadata.Word.COLUMN_WORD },
-							"", null, null, null, null);
-					if (cursor.moveToFirst()) {
-						ArrayList<String> vocabulary = new ArrayList<String>();
-						int idxOfWord = cursor.getColumnIndex(OfflineDBMetadata.Word.COLUMN_WORD);
-						do {
-							vocabulary.add(cursor.getString(idxOfWord));
-						} while(cursor.moveToNext());
-						return vocabulary;
-					}
-				} finally {
-					db.close();
+			if (openDatabase()) {
+				Cursor cursor = mSQLiteDatabase.query(
+						OfflineDBMetadata.Word.TABLE_NAME_WORD,
+						new String[] { OfflineDBMetadata.Word.COLUMN_WORD },
+						"", null, null, null, null);
+				if (cursor.moveToFirst()) {
+					ArrayList<String> vocabulary = new ArrayList<String>();
+					int idxOfWord = cursor.getColumnIndex(OfflineDBMetadata.Word.COLUMN_WORD);
+					do {
+						vocabulary.add(cursor.getString(idxOfWord));
+					} while(cursor.moveToNext());
+					return vocabulary;
 				}
 			}
 		} catch (Exception e) {
@@ -72,21 +66,14 @@ public abstract class AbstractDBHelper implements WordEntryReader {
 	
 	public int getWordId(String text) {
 		try {
-			SQLiteDatabase db = SQLiteDatabase.openDatabase(
-					mPath, null,
-					SQLiteDatabase.OPEN_READONLY);
-			if (db.isOpen()) {
-				try {
-					Cursor cursor = db.query(
-							OfflineDBMetadata.Word.TABLE_NAME_WORD,
-							new String[] { OfflineDBMetadata.Word.COLUMN_ID },
-							OfflineDBMetadata.Word.COLUMN_WORD + " = ?",
-							new String[] { text }, null, null, null);
-					if (cursor.moveToFirst()) {
-						return cursor.getInt(cursor.getColumnIndex(OfflineDBMetadata.Word.COLUMN_ID));
-					}
-				} finally {
-					db.close();
+			if (openDatabase()) {
+				Cursor cursor = mSQLiteDatabase.query(
+						OfflineDBMetadata.Word.TABLE_NAME_WORD,
+						new String[] { OfflineDBMetadata.Word.COLUMN_ID },
+						OfflineDBMetadata.Word.COLUMN_WORD + " = ?",
+						new String[] { text }, null, null, null);
+				if (cursor.moveToFirst()) {
+					return cursor.getInt(cursor.getColumnIndex(OfflineDBMetadata.Word.COLUMN_ID));
 				}
 			}
 		} catch (Exception e) {
@@ -110,58 +97,52 @@ public abstract class AbstractDBHelper implements WordEntryReader {
 		}
 		
 		try {
-			SQLiteDatabase db = SQLiteDatabase.openDatabase(mPath, null,
-					SQLiteDatabase.OPEN_READONLY);
-			if (db.isOpen()) {
-				try {
-					entry = new WordEntry();
-					Cursor cursor = db.rawQuery(mQuerySql,
-							new String[] { String.valueOf(wordId) });
-					
-					// query word by id
-					if (cursor.moveToFirst()) {
-						entry.setWord(cursor.getString(cursor
-								.getColumnIndex(OfflineDBMetadata.Word.COLUMN_WORD)));
-						Log.d(TAG, entry.getWord());
-					}
-					
-					ArrayList<WordEntry.Paraphrase> paraphrases = new ArrayList<WordEntry.Paraphrase>();
-					int paraphraseId = -1;
-					WordEntry.Paraphrase paraphrase = null;
-					if (cursor.moveToFirst()) {
-						int idxOfId = cursor.getColumnIndex(OfflineDBMetadata.Paraphrase.COLUMN_ID);
-						int idxOfCategore = cursor.getColumnIndex(OfflineDBMetadata.Paraphrase.COLUMN_CATEGORE);
-						int idxOfDetail = cursor.getColumnIndex(OfflineDBMetadata.Paraphrase.COLUMN_DETAIL);
-						int idxOfDemo = cursor.getColumnIndex(OfflineDBMetadata.Demonstration.COLUMN_DEMONSTRATION);
-						
-						do {
-							int id = cursor.getInt(idxOfId);
-							if(paraphrase == null || paraphraseId != id) {
-								paraphraseId = id;
-								
-								int category = cursor.getInt(idxOfCategore);
-								String detail = cursor.getString(idxOfDetail);
-								paraphrase = new WordEntry.Paraphrase(category, detail);
-								paraphrases.add(paraphrase);
-								
-								android.util.Log.d(TAG, "   - " + paraphrase.getDetail());
-							}
-							
-							if(paraphrase != null) {
-								String demo = cursor.getString(idxOfDemo);
-								if(demo != null) {
-									paraphrase.addDemo(demo);
-								}
-								android.util.Log.d(TAG, "     - " + demo);
-							}
-						} while(cursor.moveToNext());
-					}
-					
-					entry.setParaphrases(paraphrases);
-					entry.setStatus(Status.SUCCESS);
-				} finally {
-					db.close();
+			if (openDatabase()) {
+				entry = new WordEntry();
+				Cursor cursor = mSQLiteDatabase.rawQuery(mQuerySql,
+						new String[] { String.valueOf(wordId) });
+				
+				// query word by id
+				if (cursor.moveToFirst()) {
+					entry.setWord(cursor.getString(cursor
+							.getColumnIndex(OfflineDBMetadata.Word.COLUMN_WORD)));
+					Log.d(TAG, entry.getWord());
 				}
+				
+				ArrayList<WordEntry.Paraphrase> paraphrases = new ArrayList<WordEntry.Paraphrase>();
+				int paraphraseId = -1;
+				WordEntry.Paraphrase paraphrase = null;
+				if (cursor.moveToFirst()) {
+					int idxOfId = cursor.getColumnIndex(OfflineDBMetadata.Paraphrase.COLUMN_ID);
+					int idxOfCategore = cursor.getColumnIndex(OfflineDBMetadata.Paraphrase.COLUMN_CATEGORE);
+					int idxOfDetail = cursor.getColumnIndex(OfflineDBMetadata.Paraphrase.COLUMN_DETAIL);
+					int idxOfDemo = cursor.getColumnIndex(OfflineDBMetadata.Demonstration.COLUMN_DEMONSTRATION);
+					
+					do {
+						int id = cursor.getInt(idxOfId);
+						if(paraphrase == null || paraphraseId != id) {
+							paraphraseId = id;
+							
+							int category = cursor.getInt(idxOfCategore);
+							String detail = cursor.getString(idxOfDetail);
+							paraphrase = new WordEntry.Paraphrase(category, detail);
+							paraphrases.add(paraphrase);
+							
+							android.util.Log.d(TAG, "   - " + paraphrase.getDetail());
+						}
+						
+						if(paraphrase != null) {
+							String demo = cursor.getString(idxOfDemo);
+							if(demo != null) {
+								paraphrase.addDemo(demo);
+							}
+							android.util.Log.d(TAG, "     - " + demo);
+						}
+					} while(cursor.moveToNext());
+				}
+				
+				entry.setParaphrases(paraphrases);
+				entry.setStatus(Status.SUCCESS);
 			}
 		} catch (Exception e) {
 			if (entry != null) {
@@ -218,5 +199,22 @@ public abstract class AbstractDBHelper implements WordEntryReader {
 	}
 	
 	protected abstract String getDBFilePath();
-
+	
+	protected synchronized boolean openDatabase() {
+		if(null == mSQLiteDatabase) {
+			mSQLiteDatabase = SQLiteDatabase.openDatabase(
+					mPath, null,
+					SQLiteDatabase.OPEN_READONLY);
+		}
+		
+		return mSQLiteDatabase.isOpen();
+	}
+	
+	protected synchronized void closeDatabase() {
+		if(null != mSQLiteDatabase) {
+			mSQLiteDatabase.close();
+			mSQLiteDatabase = null;
+		}
+	}
+	
 }

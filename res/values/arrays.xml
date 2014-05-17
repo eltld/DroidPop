@@ -20,4 +20,30 @@
         <item>@null</item>
     </array>
 
+    <string-array name="word_category">
+        <item>ABBREVIATION</item>
+        <item>ADJECTIVE</item>
+        <item>ADVERB</item>
+        <item>ARTICLE</item>
+        <item>CONJUNCTION</item>
+        <item>INTERJECTION</item>
+        <item>NUMBERAL</item>
+        <item>PREPOSITION</item>
+        <item>PRONOUN</item>
+        <item>NOUN</item>
+        <item>PROPER NOUN</item>
+        <item>COUNTABLE NOUN</item>
+        <item>UNCOUNTABLE NOUN</item>
+        <item>VERB</item>
+        <item>AUXILIARY VERB</item>
+        <item>MODAL VERB</item>
+        <item>TRANSITIVE VERB</item>
+        <item>INTRANSITIVE VERB</item>
+        <item>LEXICAL PHRASE</item>
+        <item>USAGE</item>
+        <item>TRANSLATION</item>
+        <item>WEB ENTRY</item>
+        <item>UNKOWN</item>
+    </string-array>
+
 </resources>

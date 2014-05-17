@@ -3,7 +3,6 @@ package com.droidpop.app;
 import java.util.Set;
 
 import junit.framework.Assert;
-
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.util.SparseArray;
@@ -70,7 +69,7 @@ public final class PreferenceSettingsManager {
 	
 	private static final SharedPreferences sDefaultPreferences;
 	static {
-		sDefaultPreferences = PreferenceManager.getDefaultSharedPreferences(DroidPop.getApplicationContext());
+		sDefaultPreferences = PreferenceManager.getDefaultSharedPreferences(DroidPop.APPLICATION_CONTEXT);
 	}
 	
 	private static boolean sBatch = false;

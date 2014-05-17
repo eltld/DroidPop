@@ -1,6 +1,5 @@
 package com.droidpop.activity;
 
-import android.app.Activity;
 import android.content.Context;
 import android.graphics.Typeface;
 import android.os.Bundle;
@@ -54,7 +53,7 @@ public class RecentQueryListFragment extends Fragment {
 		mNoContentView = (TextView) mContentView.findViewById(R.id.no_content_prompt_view);
 		mNoContentView.setTypeface(mExistencefont);
 		if(adapter.isEmpty()) {
-			mNoContentView.setVisibility(View.VISIBLE);
+//			mNoContentView.setVisibility(View.VISIBLE); TODO:
 		}
 		
 		return mContentView;

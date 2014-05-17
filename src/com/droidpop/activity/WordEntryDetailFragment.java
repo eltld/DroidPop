@@ -1,21 +1,20 @@
 package com.droidpop.activity;
 
-import com.droidpop.R;
-import com.droidpop.config.FontFactory;
-import com.droidpop.config.FontFactory.Font;
-import com.droidpop.dict.WordEntry;
-import com.droidpop.model.SlidePagerAdapter;
-
 import android.content.Context;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
+import com.droidpop.R;
+import com.droidpop.config.FontFactory;
+import com.droidpop.config.FontFactory.Font;
+import com.droidpop.dict.WordEntry;
+import com.droidpop.model.SlidePagerAdapter;
 
 public class WordEntryDetailFragment extends Fragment {
 	
@@ -27,7 +26,7 @@ public class WordEntryDetailFragment extends Fragment {
 	private View mContentLayout;
 	private TextView mTitleView;
 	private ViewPager mDetailPager;
-	private PagerAdapter mDetailPagerAdapter;
+	private SlidePagerAdapter mDetailPagerAdapter;
 	
 	public WordEntryDetailFragment() {
 		mHasInitialized = false;
@@ -36,6 +35,7 @@ public class WordEntryDetailFragment extends Fragment {
 	public void setWordEntry(WordEntry entry) {
 		if (entry.isValid()) {
 			mWordEntry = entry;
+			mDetailPagerAdapter.setParaphrases(mWordEntry.getParaphrases());
 			
 			updateView();
 		}
@@ -54,7 +54,7 @@ public class WordEntryDetailFragment extends Fragment {
 		mTitleView.setTypeface(mExistencefont);
 		
 		mDetailPager = (ViewPager) mContentLayout.findViewById(R.id.paraphrase);
-		mDetailPagerAdapter = new SlidePagerAdapter();
+		mDetailPagerAdapter = new SlidePagerAdapter(context);
 		mDetailPager.setAdapter(mDetailPagerAdapter);
 
 		mHasInitialized = true;

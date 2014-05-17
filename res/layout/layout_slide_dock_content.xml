@@ -4,16 +4,19 @@
     android:layout_height="match_parent"
     android:orientation="vertical" >
 
-    <FrameLayout
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:background="@color/taupe" >
+        android:background="@color/bule_light"
+        android:orientation="vertical" >
 
         <include layout="@layout/layout_search" />
-    </FrameLayout>
 
-    <ExpandableListView
+        <include layout="@layout/layout_word_entry_detail" />
+    </LinearLayout>
+
+    <com.droidpop.view.MenuListView
         android:id="@+id/menu_list"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

@@ -101,7 +101,7 @@ public class ControlCenter implements QuickSettingController {
 	
 	private ControlCenter(Context context) {
 		mContext = context;
-		DroidPop app = DroidPop.getApplication();
+		DroidPop app = DroidPop.APPLICATION;
 		mScreenCoordsManager = (ScreenCoordsManager) app
 				.getAppService(DroidPop.SCREEN_COORDS_SERVICE);
 		
@@ -114,7 +114,7 @@ public class ControlCenter implements QuickSettingController {
 			
 			@Override
 			public boolean isRapidOcr() {
-				return true;
+				return false;
 			}
 		});
 		

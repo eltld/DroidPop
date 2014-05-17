@@ -14,6 +14,7 @@ import android.view.PointerIcon;
 
 import com.droidpop.R;
 import com.droidpop.app.DroidPop;
+import com.droidpop.config.ApplicationConfig;
 
 public abstract class OcrAdapter {
 	/**
@@ -54,36 +55,39 @@ public abstract class OcrAdapter {
 
 	/**
 	 * specify the source of image to be extracted before other getter(f.e.
-	 * {@link #getText(Point)}) method, it will auto clear up previous
+	 * {@link #getText(int, String)}) method, it will auto clear up previous
 	 * recognition results and any stored image data for security reasons.
 	 * 
+	 * @param bitmap
+	 *            the source of image to be extracted
+	 * @param points
+	 *            the touch points on screen
 	 */
-	public abstract boolean recognize(Bitmap bitmap);
+	public abstract boolean recognize(Bitmap bitmap, Point... points);
 
 	public abstract boolean isConfidence();
 
 	/**
-	 * {@link #getText(Point, String)} by UTF-8 encoding
-	 * 
-	 */
-	public String getText(Point point) {
-		return getText(point, "UTF-8");
-	}
-
-	/**
 	 * using {@link #isConfidence()} to check recognized result's confidence
 	 * 
-	 * @param point
-	 *            the first touch point on screen
+	 * @param index
 	 * @return if success, get the recognized text; otherwise return null
 	 */
-	public abstract String getText(Point point, String encode);
+	public abstract String getText(int index, String encode);
+	
+	/**
+	 * {@link #getText(int, String)} by UTF-8 encoding
+	 * 
+	 */
+	public String getText() {
+		return getText(0, "UTF-8");
+	}
 	
 	protected File getOcrDir() {
 		Context context = mContext.getApplicationContext();
 		
 		File ocrDir = null;
-		if(DroidPop.isDebuggable()) {
+		if(ApplicationConfig.DEBUG) {
 			// unzip tesseract-ocr.eng.zip to external storage and remove it from assets/
 			// to compressing the .apk size from 10+ MB to fewer size f.e. 2M, and fast debug
 			if(ExternalStorage.isExternalStorageWritable()) {
@@ -103,6 +107,9 @@ public abstract class OcrAdapter {
 	}
 
 	protected static Rect getTargetRect(Point touchPoint, ArrayList<Rect> rects) {
+		long costMillis = System.currentTimeMillis();
+		DroidPop.debug("getTargetRect...");
+		
 		Rect touchRect = getTouchRect(touchPoint);
 		
 		ArrayList<Pair<Integer, Rect>> overlaps = new ArrayList<Pair<Integer,Rect>>();
@@ -141,6 +148,9 @@ public abstract class OcrAdapter {
 			DroidPop.debug(target);
 		}
 
+		costMillis = System.currentTimeMillis() - costMillis;
+		DroidPop.debug("cost ", costMillis, " ms");
+		
 		return target;
 	}
 	

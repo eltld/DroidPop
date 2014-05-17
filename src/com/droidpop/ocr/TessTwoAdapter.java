@@ -11,15 +11,15 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.graphics.Rect;
+import android.util.Log;
 
 import com.droidpop.app.DroidPop;
-import com.googlecode.tesseract.android.ResultIterator;
 import com.googlecode.tesseract.android.TessBaseAPI;
-import com.googlecode.tesseract.android.TessBaseAPI.PageIteratorLevel;
 
 public class TessTwoAdapter extends OcrAdapter {
 
-	private final int MEAN_CONFIDENCE_THREHOLD = 80;
+	private static final String TAG = "TessTwoAdapter";
+	private static final float MEAN_CONFIDENCE_THREHOLD = 0.8f;
 
 	// never modify static string value below if you don't understand what you do
 	private static final String TESSERACT_OCR = "tesseract-ocr";
@@ -31,8 +31,7 @@ public class TessTwoAdapter extends OcrAdapter {
 	private String mLanguage;
 
 	private TessBaseAPI mBaseApi;
-	private Rect mRegionRect;
-	
+	private ArrayList<String> mRecognizedText;
 
 	public TessTwoAdapter(Context context) {
 		this(context, null);
@@ -66,7 +65,8 @@ public class TessTwoAdapter extends OcrAdapter {
 			DroidPop.log(DroidPop.LEVEL_ERROR,
 					"initialize tesseract engine failed");
 		}
-		mRegionRect = new Rect();
+		
+		mRecognizedText = new ArrayList<String>();
 	}
 
 	public boolean checkEnvironment() {
@@ -82,48 +82,53 @@ public class TessTwoAdapter extends OcrAdapter {
 	}
 
 	@Override
-	public boolean recognize(Bitmap bitmap) {
-		 // 1280x736, confusing! where's the 64? bug fixed in ScreenCaptureService
+	public boolean recognize(Bitmap bitmap, Point... points) {
 		DroidPop.debug("bitmap size: ", bitmap.getWidth(),
 				"x", bitmap.getHeight(), " px.");
 		
+		boolean recognized = false;
+		
 		mBaseApi.clear();
 		mBaseApi.setImage(bitmap);
-		initRegionRect();
+
+		mRecognizedText.clear();
+		for(Point point : points) {
+			ArrayList<Rect> rects = mBaseApi.getWords().getBoxRects();
+			Rect target = getTargetRect(point, rects);
+			String recognizedText = null;
+			if (target != null) {
+				mBaseApi.setRectangle(target);
+				recognizedText = mBaseApi.getUTF8Text();
+				recognizedText = recognizedText
+						.replaceAll("[^a-zA-Z0-9\']+", " ");
+				recognized = true;
+			}
+			mRecognizedText.add(recognizedText);
+		}
 		
-		// check
-		ResultIterator iter = mBaseApi.getResultIterator();
-		return (iter != null && iter.next(PageIteratorLevel.RIL_SYMBOL));
+		return recognized;
 	}
 
 	@Override
 	public boolean isConfidence() {
-		return (mBaseApi.meanConfidence() < MEAN_CONFIDENCE_THREHOLD);
+		int recognized = 0;
+		for(String text : mRecognizedText) {
+			if(text != null) {
+				recognized++;
+			}
+		}
+		return (MEAN_CONFIDENCE_THREHOLD * mRecognizedText.size() <= recognized);
 	}
 
-	/**
-	 * @param point
-	 *            the first touch point on screen
-	 * @param encode
-	 *            ignored, default return UTF-8 text
-	 */
 	@Override
-	public String getText(Point point, String encode) {
-		String recognizedText = null;
-		
-		ArrayList<Rect> rects = mBaseApi.getWords().getBoxRects();
-		Rect target = getTargetRect(point, rects);
-		
-		if (target != null) {
-			mBaseApi.setRectangle(target);
-			recognizedText = mBaseApi.getUTF8Text();
-			recognizedText = recognizedText
-					.replaceAll("[^a-zA-Z0-9\']+", " ");
-
-			mBaseApi.setRectangle(mRegionRect);
+	public String getText(int index, String encode) {
+		try {
+			return mRecognizedText.get(index);
+		} catch (IndexOutOfBoundsException e) {
+			Log.d(TAG, e.toString());
 		}
-
-		return recognizedText;
+		
+		return null;
 	}
 	
 	private void init() throws FileNotFoundException {
@@ -164,28 +169,6 @@ public class TessTwoAdapter extends OcrAdapter {
 		if (langFile == null || !langFile.exists()) {
 			throw new FileNotFoundException(langFile.getAbsolutePath());
 		}
-	}
-
-	private void initRegionRect() {
-		int left = Integer.MAX_VALUE;
-		int right = Integer.MIN_VALUE;
-		int top = Integer.MAX_VALUE;
-		int bottom = Integer.MIN_VALUE;
-
-		ArrayList<Rect> regionRects = mBaseApi.getRegions().getBoxRects();
-		Rect rect = null;
-		int cnt = regionRects.size();
-
-		for (int i = 0; i != cnt; i++) {
-			rect = regionRects.get(i);
-
-			left = Math.min(left, rect.left);
-			right = Math.max(right, rect.right);
-			top = Math.min(top, rect.top);
-			bottom = Math.max(bottom, rect.bottom);
-		}
-
-		mRegionRect.set(left, top, right, bottom);
 	}
 	
 	private class LanguagePackageFilter implements FilenameFilter {

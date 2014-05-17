@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent" >
 
-    <android.support.v4.widget.DrawerLayout
+    <com.droidpop.view.MenuDrawerLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/slide_dock_view"
         android:layout_width="match_parent"
@@ -22,6 +22,6 @@
 
             <include layout="@layout/layout_slide_dock_content" />
         </FrameLayout>
-    </android.support.v4.widget.DrawerLayout>
+    </com.droidpop.view.MenuDrawerLayout>
 
 </RelativeLayout>

@@ -22,6 +22,8 @@ import android.widget.RelativeLayout;
 
 import com.droidpop.R;
 import com.droidpop.app.PreferenceSettingsManager;
+import com.droidpop.config.FontFactory;
+import com.droidpop.config.FontFactory.Font;
 
 public class InstantTranslationView extends FloatingView {
 	
@@ -192,6 +194,8 @@ public class InstantTranslationView extends FloatingView {
 		});
 		
 		mWordEntryEditor = (EditText) mNavView.findViewById(R.id.word_entry_editor);
+		FontFactory factory = new FontFactory(getContext());
+		mWordEntryEditor.setTypeface(factory.buildFont(Font.EXISTENCE));
 	}
 	
 	private void initBaseLayout(Context context) {
@@ -203,14 +207,14 @@ public class InstantTranslationView extends FloatingView {
 		mNavView = (ViewGroup) inflater.inflate(
 				R.layout.layout_instant_translation_nav_view, null);
 		RelativeLayout.LayoutParams paramOfNav = new RelativeLayout.LayoutParams(
-				RelativeLayout.LayoutParams.MATCH_PARENT,
+				384,
 				RelativeLayout.LayoutParams.WRAP_CONTENT);
 		paramOfNav.addRule(RelativeLayout.ALIGN_PARENT_TOP);
 		mAnimLayout.addView(mNavView, paramOfNav);
 
 		mContentView = new FrameLayout(context);
 		RelativeLayout.LayoutParams paramOfContent = new LayoutParams(
-				RelativeLayout.LayoutParams.MATCH_PARENT,
+				384,
 				RelativeLayout.LayoutParams.WRAP_CONTENT);
 		paramOfContent.addRule(RelativeLayout.BELOW, R.id.instant_translation_nav);
 		mAnimLayout.addView(mContentView, paramOfContent);
